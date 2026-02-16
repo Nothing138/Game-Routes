@@ -6,12 +6,13 @@ import Login from './pages/Login';
 import Footer from './components/Footer';
 import AdminLogin from './pages/Admin/AdminLogin';
 import DashboardHome from './pages/Admin/DashboardHome';
-// import CreateBlog from './pages/Admin/CreateBlog';
 import AdminLayout from './pages/Admin/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import VisaCategories from './pages/Admin/VisaCategories';
 import CountryList from './pages/Admin/CountryList';
 import Applications from './pages/Admin/Applications';
+import UploadBlog from './pages/Admin/UploadBlog';
+import BlogList from './pages/Admin/BlogList';
 
 // 🏠 Website Layout (Jekhane normal Navbar/Footer thakbe)
 const MainLayout = () => (
@@ -47,7 +48,8 @@ function App() {
           <Route path="visa-categories" element={<VisaCategories />} />
           <Route path="country-list" element={<CountryList />} />
           <Route path="applications" element={<Applications />} />
-          {/* <Route path="create-blog" element={<CreateBlog />} /> */}
+          <Route path="blogs/create" element={<UploadBlog />} />
+          <Route path="blogs" element={<BlogList />} />  
         </Route>
 
         {/* ❌ 404 PAGE */}
