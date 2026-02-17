@@ -127,12 +127,15 @@ const AdminLayout = () => {
 };
 
 // --- Sub Components for Sidebar ---
-const SidebarItem = ({ to, icon, label, isOpen, currentPath }) => (
-  <Link to={to} className={`flex items-center p-3.5 rounded-xl transition-all ${currentPath === to ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'hover:bg-gray-800 text-gray-400 hover:text-white'}`}>
-    {icon}
-    {isOpen && <span className="ml-4 text-[13px] font-black uppercase italic tracking-tight">{label}</span>}
-  </Link>
-);
+const SidebarItem = ({ to, icon, label, isOpen, currentPath }) => {
+  const isActive = currentPath === to || currentPath.startsWith(to + '/');
+  return (
+    <Link to={to} className={`flex items-center p-3.5 rounded-xl transition-all ${isActive ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'hover:bg-gray-800 text-gray-400 hover:text-white'}`}>
+      {icon}
+      {isOpen && <span className="ml-4 text-[13px] font-black uppercase italic tracking-tight">{label}</span>}
+    </Link>
+  );
+};
 
 const SidebarDropdown = ({ label, icon, items, isOpen, isMenuOpen, onClick }) => (
   <div className="space-y-1">

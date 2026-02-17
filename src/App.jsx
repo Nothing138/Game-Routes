@@ -13,13 +13,19 @@ import CountryList from './pages/Admin/CountryList';
 import Applications from './pages/Admin/Applications';
 import UploadBlog from './pages/Admin/UploadBlog';
 import BlogList from './pages/Admin/BlogList';
+import PostJob from './pages/Admin/PostJob';
+import AppliedCandidates from './pages/Admin/AppliedCandidates';
+import RecruiterManager from './pages/Admin/RecruiterManager';
+import StaffManager from './pages/Admin/StaffManager';
+import TourManager from './pages/Admin/TourManager';
+import BookingManager from './pages/Admin/BookingManager';
 
-// 🏠 Website Layout (Jekhane normal Navbar/Footer thakbe)
+// ✅ MainLayout fix: Eikhane Outlet na thakle Home/Login page ashbe na
 const MainLayout = () => (
   <div className="flex flex-col min-h-screen">
     <Navbar />
     <main className="flex-grow">
-      <Outlet /> {/* Eikhane Home, Login etc render hobe */}
+      <Outlet /> 
     </main>
     <Footer />
   </div>
@@ -29,31 +35,38 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* 🌐 PUBLIC PAGES: Navbar/Footer shoho */}
+        {/* 🌐 PUBLIC PAGES */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
         </Route>
 
-        {/* 🔐 ADMIN LOGIN: Ekebare alada design-er hobe (No Footer/Navbar) */}
+        {/* 🔐 ADMIN LOGIN */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* 📊 ADMIN DASHBOARD: Shudhu Admin Sidebar thakbe */}
+        {/* 📊 ADMIN DASHBOARD (Protected) */}
         <Route path="/admin" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['superadmin', 'admin', 'editor', 'hr_manager', 'moderator']}>
             <AdminLayout />
           </ProtectedRoute>
         }>
+          {/* Index route: /admin dhuklei dashboard dekhabe */}
+          <Route index element={<DashboardHome />} />
           <Route path="dashboard" element={<DashboardHome />} />
           <Route path="visa-categories" element={<VisaCategories />} />
           <Route path="country-list" element={<CountryList />} />
           <Route path="applications" element={<Applications />} />
           <Route path="blogs/create" element={<UploadBlog />} />
-          <Route path="blogs" element={<BlogList />} />  
+          <Route path="blogs" element={<BlogList />} />
+          <Route path="post-job" element={<PostJob />} />
+          <Route path="candidates" element={<AppliedCandidates />} />
+          <Route path="recruiters" element={<RecruiterManager />} />
+          <Route path="users" element={<StaffManager />} />
+          <Route path="tour-packages" element={<TourManager />} />
+          <Route path="bookings" element={<BookingManager />} />
         </Route>
 
-        {/* ❌ 404 PAGE */}
-        <Route path="*" element={<h1 className="text-center mt-20">404 - Page Not Found</h1>} />
+        <Route path="*" element={<h1 className="text-center mt-20 text-3xl font-black italic">404 - LOST IN SPACE</h1>} />
       </Routes>
     </Router>
   );

@@ -214,4 +214,102 @@ router.delete('/blogs/:id', async (req, res) => {
     }
 });
 
+// --- 6. JOB CIRCULAR
+// POST A JOB ---
+router.post('/jobs', async (req, res) => {
+    const { title, company_name, location, salary, job_type, description, recruiter_id } = req.body;
+    try {
+        await db.query(
+            "INSERT INTO jobs (title, company_name, location, salary, job_type, description, recruiter_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'active')",
+            [title, company_name, location, salary, job_type, description, recruiter_id || 1]
+        );
+        res.json({ success: true, message: "Job Posted Successfully!" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+//  GET APPLIED CANDIDATES ---
+router.get('/applied-candidates', async (req, res) => {
+    try {
+        const query = `
+            SELECT ja.*, j.title as job_title, u.full_name, u.email, u.resume_url 
+            FROM job_applications ja
+            JOIN jobs j ON ja.job_id = j.id
+            JOIN users u ON ja.user_id = u.id
+            ORDER BY ja.id DESC
+        `;
+        const [rows] = await db.query(query);
+        res.json(rows);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// GET RECRUITER LIST & HIRE COUNT ---
+router.get('/recruiters', async (req, res) => {
+    try {
+        const query = `
+            SELECT r.*, 
+            (SELECT COUNT(*) FROM jobs WHERE recruiter_id = r.id) as total_jobs,
+            (SELECT COUNT(*) FROM job_applications ja JOIN jobs j ON ja.job_id = j.id WHERE j.recruiter_id = r.id AND ja.status = 'hired') as total_hired
+            FROM recruiters r
+        `;
+        const [rows] = await db.query(query);
+        res.json(rows);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// --- 7. Applied Candidates
+// Update Application Status (Shortlisted/Hired/Rejected)
+router.patch('/applications/:id/status', async (req, res) => {
+    const { status } = req.body;
+    try {
+        await db.query("UPDATE job_applications SET status = ? WHERE id = ?", [status, req.params.id]);
+        res.json({ success: true, message: `Candidate ${status} successfully!` });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Delete Application
+router.delete('/applications/:id', async (req, res) => {
+    try {
+        await db.query("DELETE FROM job_applications WHERE id = ?", [req.params.id]);
+        res.json({ success: true, message: "Application removed from database" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// --- 8. Recruiter List
+// Get All Recruiters (Pending + Approved) with Activity Stats
+router.get('/recruiters/manage', async (req, res) => {
+    try {
+        const query = `
+            SELECT r.*, 
+            COUNT(DISTINCT j.id) as total_jobs,
+            COUNT(CASE WHEN ja.status = 'hired' THEN 1 END) as hired_count,
+            COUNT(CASE WHEN ja.status = 'rejected' THEN 1 END) as rejected_count,
+            COUNT(CASE WHEN ja.status = 'pending' THEN 1 END) as pending_count
+            FROM recruiters r
+            LEFT JOIN jobs j ON r.id = j.recruiter_id
+            LEFT JOIN job_applications ja ON j.id = ja.job_id
+            GROUP BY r.id
+            ORDER BY r.created_at DESC
+        `;
+        const [rows] = await db.query(query);
+        res.json(rows);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Update Recruiter Status (Approve / Suspend / Active)
+router.patch('/recruiters/:id/status', async (req, res) => {
+    const { status } = req.body;
+    try {
+        await db.query("UPDATE recruiters SET status = ? WHERE id = ?", [status, req.params.id]);
+        res.json({ success: true, message: `Recruiter status updated to ${status}` });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Delete Recruiter
+router.delete('/recruiters/:id', async (req, res) => {
+    try {
+        await db.query("DELETE FROM recruiters WHERE id = ?", [req.params.id]);
+        res.json({ success: true });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;

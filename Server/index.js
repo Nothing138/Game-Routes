@@ -4,19 +4,24 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
-const authRoutes = require('./routes/authRoutes');
+
+// ✅ Routes Import (Shudhu ekbar kore declare korben)
+const authRoutes = require('./routes/auth'); // Apnar notun auth file jeta amra banalam
 const blogRoutes = require('./routes/blogRoutes');
-const adminRoutes = require('./routes/adminRoutes'); // ✅ Added Admin Routes
+const adminRoutes = require('./routes/adminRoutes'); 
+app.use('/api/staff', require('./routes/staff'));
+const tourRoutes = require('./routes/tourRoutes');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes Registration
+// ✅ Routes Registration (Clean & Unique)
 app.use('/api/auth', authRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/admin', adminRoutes); 
+app.use('/api/tours', tourRoutes);
 
 // Static Folder for Images
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
