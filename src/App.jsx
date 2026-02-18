@@ -19,6 +19,9 @@ import RecruiterManager from './pages/Admin/RecruiterManager';
 import StaffManager from './pages/Admin/StaffManager';
 import TourManager from './pages/Admin/TourManager';
 import BookingManager from './pages/Admin/BookingManager';
+import AnalyticsDashboard from './pages/Admin/AnalyticsDashboard';
+import CommunicationCenter from './pages/Admin/CommunicationCenter';
+import PushNotificationCenter from './pages/Admin/PushNotificationCenter';
 
 // ✅ MainLayout fix: Eikhane Outlet na thakle Home/Login page ashbe na
 const MainLayout = () => (
@@ -61,9 +64,12 @@ function App() {
           <Route path="post-job" element={<PostJob />} />
           <Route path="candidates" element={<AppliedCandidates />} />
           <Route path="recruiters" element={<RecruiterManager />} />
-          <Route path="users" element={<StaffManager />} />
+          <Route path="staff-management" element={<StaffManager />} />
           <Route path="tour-packages" element={<TourManager />} />
           <Route path="bookings" element={<BookingManager />} />
+          <Route path="analytics" element={<AnalyticsDashboard />} />
+          <Route path="notifications" element={<CommunicationCenter />} />
+          <Route path="push-alerts" element={<PushNotificationCenter />} />
         </Route>
 
         <Route path="*" element={<h1 className="text-center mt-20 text-3xl font-black italic">404 - LOST IN SPACE</h1>} />

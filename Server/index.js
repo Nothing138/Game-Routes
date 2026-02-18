@@ -9,8 +9,8 @@ const app = express();
 const authRoutes = require('./routes/auth'); // Apnar notun auth file jeta amra banalam
 const blogRoutes = require('./routes/blogRoutes');
 const adminRoutes = require('./routes/adminRoutes'); 
-app.use('/api/staff', require('./routes/staff'));
 const tourRoutes = require('./routes/tourRoutes');
+const staffRoutes = require('./routes/staffRoutes');
 
 // Middleware
 app.use(cors());
@@ -22,6 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/admin', adminRoutes); 
 app.use('/api/tours', tourRoutes);
+app.use('/api/staff', staffRoutes);
 
 // Static Folder for Images
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
