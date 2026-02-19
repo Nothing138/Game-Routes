@@ -1,20 +1,22 @@
 const jwt = require('jsonwebtoken');
 
-module.exports = (req, res, next) => {
-    // Header theke token nawa
-    const authHeader = req.header('Authorization');
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ message: "No token, authorization denied!" });
-    }
+const authorize = (allowedRoles = []) => {
+    return (req, res, next) => {
+        const token = req.headers['authorization'];
+        if (!token) return res.status(403).json({ message: "No token provided" });
 
-    const token = authHeader.split(' ')[1];
+        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+            if (err) return res.status(401).json({ message: "Unauthorized" });
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded; // User data request object-e add kora
-        next();
-    } catch (err) {
-        res.status(401).json({ message: "Token is not valid!" });
-    }
+            // Role Check
+            if (allowedRoles.length && !allowedRoles.includes(decoded.role)) {
+                return res.status(403).json({ message: "Permission Denied: Access Restricted" });
+            }
+
+            req.user = decoded;
+            next();
+        });
+    };
 };
+
+module.exports = authorize;

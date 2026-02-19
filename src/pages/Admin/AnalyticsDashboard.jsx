@@ -17,16 +17,20 @@ const AnalyticsDashboard = () => {
 
   const fetchAnalytics = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/admin/stats');
+      // Backend api-te token pathate hobe jodi middleware thake
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:5000/api/admin/stats', {
+          headers: { Authorization: `Bearer ${token}` }
+      });
       setStats(res.data);
     } catch (err) {
-      console.error("Analytics Sync Failed");
+      console.error("Analytics Sync Failed", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // --- PDF Export Logic (Fixed) ---
+  // --- PDF Export Logic ---
   const exportPDF = () => {
     if (!stats || !stats.recentBookings || stats.recentBookings.length === 0) {
         alert("System Alert: No transaction logs found to export.");
@@ -34,8 +38,6 @@ const AnalyticsDashboard = () => {
     }
 
     const doc = new jsPDF();
-    
-    // Header Styling
     doc.setFontSize(20);
     doc.setTextColor(30, 41, 59);
     doc.text("GAME ROUTES AGENCY - EXECUTIVE REPORT", 14, 22);
@@ -43,10 +45,9 @@ const AnalyticsDashboard = () => {
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text(`Timestamp: ${new Date().toLocaleString()}`, 14, 30);
-    doc.text(`Visa Success Rate: ${stats.visaSuccess}%`, 14, 35);
-    doc.text(`Operational Revenue: $${stats.revenue.toLocaleString()}`, 14, 40);
+    doc.text(`Visa Success Rate: ${stats.visaSuccess || 0}%`, 14, 35);
+    doc.text(`Operational Revenue: $${(stats.revenue || 0).toLocaleString()}`, 14, 40);
 
-    // Table
     const tableColumn = ["Client Name", "Package", "Amount", "Status"];
     const tableRows = stats.recentBookings.map(item => [
       item.client_name,
@@ -55,7 +56,6 @@ const AnalyticsDashboard = () => {
       item.status ? item.status.toUpperCase() : 'PENDING'
     ]);
 
-    // doc.autoTable call fix
     doc.autoTable({
       head: [tableColumn],
       body: tableRows,
@@ -68,6 +68,7 @@ const AnalyticsDashboard = () => {
     doc.save(`GR_Executive_Report_${Date.now()}.pdf`);
   };
 
+  // --- Loading State ---
   if (loading) return (
     <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
       <Loader2 className="animate-spin text-red-600" size={40} />
@@ -75,15 +76,22 @@ const AnalyticsDashboard = () => {
     </div>
   );
 
+  // --- Empty State Check ---
+  if (!stats) return (
+    <div className="h-[60vh] flex items-center justify-center text-slate-500 font-bold">
+        Error loading analytics. Please check backend connection.
+    </div>
+  );
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       
-      {/* KPI Section - Now with 4 cards for better metrics */}
+      {/* KPI Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Gross Revenue" value={`$${stats.revenue.toLocaleString()}`} icon={<DollarSign/>} color="bg-emerald-600" />
-        <StatCard title="Total Bookings" value={stats.bookings} icon={<Briefcase/>} color="bg-red-700" />
-        <StatCard title="Visa Success" value={`${stats.visaSuccess || '92'}%`} icon={<Globe/>} color="bg-blue-700" />
-        <StatCard title="Staff Members" value={stats.staff} icon={<Users/>} color="bg-slate-800" />
+        <StatCard title="Gross Revenue" value={`$${(stats.revenue || 0).toLocaleString()}`} icon={<DollarSign/>} color="bg-emerald-600" />
+        <StatCard title="Total Bookings" value={stats.bookings || 0} icon={<Briefcase/>} color="bg-red-700" />
+        <StatCard title="Visa Success" value={`${stats.visaSuccess || '0'}%`} icon={<Globe/>} color="bg-blue-700" />
+        <StatCard title="Staff Members" value={stats.staff || 0} icon={<Users/>} color="bg-slate-800" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -93,14 +101,11 @@ const AnalyticsDashboard = () => {
             <h3 className="text-xl font-black italic uppercase tracking-tighter flex items-center gap-2 text-slate-900">
               <TrendingUp className="text-red-600" /> Growth Trajectory
             </h3>
-            <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase italic">Real-time Metrics</span>
-            </div>
           </div>
           <div className="h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={stats.growth}>
+              {/* Fallback to empty array if growth is null */}
+              <AreaChart data={stats.growth || []}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: '800', fill: '#94a3b8'}} />
                 <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: '800', fill: '#94a3b8'}} />
@@ -116,7 +121,6 @@ const AnalyticsDashboard = () => {
 
         {/* Intelligence Hub */}
         <div className="bg-slate-900 p-10 rounded-[45px] shadow-2xl text-white flex flex-col justify-between overflow-hidden relative">
-          {/* Decorative Background Icon */}
           <CheckCircle className="absolute -bottom-10 -right-10 text-white opacity-5" size={200} />
           
           <div className="relative z-10">
@@ -128,23 +132,12 @@ const AnalyticsDashboard = () => {
               Executive <br /> <span className="text-red-600 underline">Summary</span>
             </h2>
             <p className="text-slate-400 text-sm font-medium leading-relaxed italic">
-              Platform analysis indicates a total of {stats.bookings} processed transaction logs. 
-              The current Visa success rate is stable at {stats.visaSuccess || '92'}%. 
-              All data points are synchronized with the central repository.
+              Platform analysis indicates a total of {stats.bookings || 0} processed transaction logs. 
+              The current Visa success rate is stable at {stats.visaSuccess || 0}%. 
             </p>
           </div>
 
           <div className="space-y-4 relative z-10">
-            <div className="p-4 bg-slate-800 rounded-2xl border border-slate-700">
-                <div className="flex justify-between text-[9px] font-black uppercase mb-2">
-                    <span className="text-slate-500">Database Integrity</span>
-                    <span className="text-emerald-500">Secured</span>
-                </div>
-                <div className="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-red-600 h-full w-full animate-pulse"></div>
-                </div>
-            </div>
-            
             <button 
               onClick={exportPDF}
               className="group w-full bg-white text-black p-5 rounded-2xl font-black uppercase italic text-xs tracking-[0.2em] hover:bg-red-600 hover:text-white transition-all duration-300 flex items-center justify-center gap-3 shadow-xl"
@@ -158,7 +151,6 @@ const AnalyticsDashboard = () => {
   );
 };
 
-// Reusable StatCard Component
 const StatCard = ({ title, value, icon, color }) => (
   <div className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100 hover:border-red-600 transition-colors duration-300">
     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg ${color}`}>
