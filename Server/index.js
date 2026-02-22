@@ -11,6 +11,8 @@ const blogRoutes = require('./routes/blogRoutes');
 const adminRoutes = require('./routes/adminRoutes'); 
 const tourRoutes = require('./routes/tourRoutes');
 const staffRoutes = require('./routes/staffRoutes');
+const recruiterRoutes = require('./routes/recruiterRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // Middleware
 app.use(cors());
@@ -23,6 +25,8 @@ app.use('/api/blogs', blogRoutes);
 app.use('/api/admin', adminRoutes); 
 app.use('/api/tours', tourRoutes);
 app.use('/api/staff', staffRoutes);
+app.use('/api/recruiter', recruiterRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Static Folder for Images
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
