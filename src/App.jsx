@@ -30,9 +30,10 @@ import ManageRecruiters from './pages/Admin/ManageRecruiters';
 // ✅ Recruiter Pages
 import RecruiterLayout from './pages/Recruiter/RecruiterLayout';
 import RecruiterDashboard from './pages/Recruiter/RecruiterDashboard';
+import RecruiterPostJob from './pages/Recruiter/PostJob';
 
 // Dummy components pore ready korbo
-const RecruiterPostJob = () => <div className="p-10 bg-white rounded-[40px] shadow-sm font-black italic uppercase text-slate-400">Recruiter Job Post Form - Coming Soon</div>;
+
 const RecruiterJobs = () => <div className="p-10 bg-white rounded-[40px] shadow-sm font-black italic uppercase text-slate-400">My Posted Jobs - Coming Soon</div>;
 
 const MainLayout = () => (
