@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Globe, Briefcase, MapPin, 
   FileText, Users, UserPlus, Menu, X, Bell, LogOut, ChevronDown, 
   PlusCircle, List, Send, CheckCircle, Package, Bookmark,
-  BarChart3, MessageSquare, Mail
+  BarChart3, MessageSquare, Mail, Sun, Moon 
 } from 'lucide-react';
 
 import Footer from '../../components/Admin&Recruiter/Footer';
@@ -18,16 +18,33 @@ const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // --- Get User Data from Storage ---
-  const userRole = localStorage.getItem('role'); // e.g., 'editor', 'moderator', 'hr_manager', 'superadmin'
+  // --- Dark Mode Logic ---
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
 
-  // --- Role Access Logic ---
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
+
+  // --- 🛡️ Unified Role-Based Access Logic ---
+  const userRole = localStorage.getItem('role'); 
+  
   const isSuperAdmin = userRole === 'superadmin';
-  const isHR = userRole === 'hr_manager' || isSuperAdmin;
-  const isEditor = userRole === 'editor' || isSuperAdmin;
-  const isModerator = userRole === 'moderator' || isSuperAdmin;
+  const isAdmin      = userRole === 'admin' || isSuperAdmin; 
+  const isHR         = userRole === 'hr_manager' || isAdmin || isSuperAdmin;
+  const isModerator  = userRole === 'moderator' || isHR || isAdmin || isSuperAdmin;
+  const isRecruiter  = userRole === 'recruiter' || isHR || isAdmin || isSuperAdmin;
 
-  const fetchUnreadCount = async () => {
+  /*const fetchUnreadCount = async () => {
     try {
       const res = await axios.get('http://localhost:5000/api/admin/notifications/unread-count');
       setUnreadCount(res.data.count || 0);
@@ -38,7 +55,7 @@ const AdminLayout = () => {
     fetchUnreadCount();
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, []);*/
 
   const toggleMenu = (menuName) => {
     setOpenMenus(prev => ({ ...prev, [menuName]: !prev[menuName] }));
@@ -61,7 +78,8 @@ const AdminLayout = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#F1F5F9] font-sans overflow-hidden">
+    <div className={`flex h-screen font-sans overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-[#0f172a]' : 'bg-[#F1F5F9]'}`}>
+      
       {/* --- SIDEBAR --- */}
       <aside className={`${isSidebarOpen ? 'w-72' : 'w-20'} bg-[#1E293B] text-gray-300 transition-all duration-300 flex flex-col shadow-2xl z-50`}>
         <div className="h-20 flex items-center px-6 bg-red-700 border-b border-gray-800 italic font-black text-white uppercase tracking-tighter shadow-lg shrink-0 text-center">
@@ -69,16 +87,13 @@ const AdminLayout = () => {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-2 custom-scrollbar">
-          
-          {/* 1. Dashboard - Everyone in Admin Panel can see */}
+          {/* Dashboard - Visible to All Staff */}
           <SidebarItem to="/admin/dashboard" icon={<LayoutDashboard size={20}/>} label="Dashboard" isOpen={isSidebarOpen} currentPath={location.pathname} />
-
-          {/* 2. Analytics - SuperAdmin only */}
-          {isSuperAdmin && (
-            <SidebarItem to="/admin/analytics" icon={<BarChart3 size={20}/>} label="Analytics & Stats" isOpen={isSidebarOpen} currentPath={location.pathname} />
-          )}
-
-          {/* 3. Visa Application - HR & SuperAdmin */}
+          
+          {/* Analytics - Super Admin Only */}
+          {isSuperAdmin && <SidebarItem to="/admin/analytics" icon={<BarChart3 size={20}/>} label="Analytics" isOpen={isSidebarOpen} currentPath={location.pathname} />}
+          
+          {/* Visa Application - HR & Admin */}
           {isHR && (
             <SidebarDropdown 
               label="Visa Application" icon={<Globe size={20}/>} isOpen={isSidebarOpen} isMenuOpen={openMenus.visa} onClick={() => toggleMenu('visa')}
@@ -90,20 +105,20 @@ const AdminLayout = () => {
             />
           )}
 
-          {/* 4. Job Circular - HR & SuperAdmin */}
-          {isHR && (
+          {/* Job Circular - Recruiter, HR, Admin */}
+          {isRecruiter && (
             <SidebarDropdown 
               label="Job Circular" icon={<Briefcase size={20}/>} isOpen={isSidebarOpen} isMenuOpen={openMenus.job} onClick={() => toggleMenu('job')}
               items={[
                 { label: 'Post Job', to: '/admin/post-job', icon: <Send size={14}/> },
+                { label: 'Job List', to: '/admin/job-list', icon: <List size={14}/> },
                 { label: 'Applied Candidates', to: '/admin/candidates', icon: <Users size={14}/> },
-                //{ label: 'Recruiter List', to: '/admin/recruiters', icon: <List size={14}/> },
                 { label: 'Recruiter List', to: '/admin/manage-recruiters', icon: <List size={14}/> },
               ]}
             />
           )}
 
-          {/* 5. Travel & Tour - HR & SuperAdmin */}
+          {/* Travel & Tour - HR & Admin */}
           {isHR && (
             <SidebarDropdown 
               label="Travel & Tour" icon={<MapPin size={20}/>} isOpen={isSidebarOpen} isMenuOpen={openMenus.travel} onClick={() => toggleMenu('travel')}
@@ -114,8 +129,8 @@ const AdminLayout = () => {
             />
           )}
 
-          {/* 6. Communications - Editor, HR & SuperAdmin */}
-          {(isEditor || isHR) && (
+          {/* Communications - All Staff (Recruiter, Moderator, HR, Admin) */}
+          {isRecruiter && (
             <SidebarDropdown 
               label="Communications" icon={<MessageSquare size={20}/>} isOpen={isSidebarOpen} isMenuOpen={openMenus.chat} onClick={() => toggleMenu('chat')}
               items={[
@@ -125,8 +140,8 @@ const AdminLayout = () => {
             />
           )}
 
-          {/* 7. Agency Blog - Editor, Moderator, HR & SuperAdmin */}
-          {(isEditor || isModerator || isHR) && (
+          {/* Agency Blog - Moderator, HR, Admin */}
+          {isModerator && (
             <SidebarDropdown 
               label="Agency Blog" icon={<FileText size={20}/>} isOpen={isSidebarOpen} isMenuOpen={openMenus.blog} onClick={() => toggleMenu('blog')}
               items={[
@@ -136,49 +151,47 @@ const AdminLayout = () => {
             />
           )}
 
-          {/* 8. Staff Management - Moderator & SuperAdmin */}
-          {(isModerator || isSuperAdmin) && (
+          {/* Staff Management - Moderator, HR, Admin, Superadmin */}
+          {isModerator && (
             <SidebarItem to="/admin/staff-management" icon={<UserPlus size={20}/>} label="Staff Management" isOpen={isSidebarOpen} currentPath={location.pathname} />
           )}
-
         </nav>
       </aside>
 
       {/* --- MAIN CONTENT --- */}
       <div className="flex-1 flex flex-col">
-        <header className="h-20 bg-white border-b flex items-center justify-between px-8 shadow-sm">
+        <header className={`h-20 border-b flex items-center justify-between px-8 shadow-sm transition-colors duration-300 ${isDarkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-gray-200'}`}>
           <div className="flex items-center gap-4">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2.5 bg-gray-50 rounded-xl hover:text-red-600 border transition-all">
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`p-2.5 rounded-xl border transition-all ${isDarkMode ? 'bg-slate-800 text-gray-300 border-slate-700 hover:text-red-500' : 'bg-gray-50 text-gray-600 border-gray-200 hover:text-red-600'}`}>
               {isSidebarOpen ? <X size={20}/> : <Menu size={20}/>}
             </button>
             <div className="hidden md:block">
-               <h1 className="text-xs font-black uppercase italic text-gray-400 tracking-[0.2em]">Management Control Center</h1>
-               <span className="text-[10px] bg-black text-white px-2 py-0.5 rounded font-bold uppercase italic">{userRole}</span>
+               <h1 className={`text-xs font-black uppercase italic tracking-[0.2em] ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>Management Control Center</h1>
+               <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase italic ${isDarkMode ? 'bg-red-700/20 text-red-400 border border-red-700/50' : 'bg-black text-white'}`}>{userRole}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            <button onClick={toggleDarkMode} className={`p-3 rounded-2xl transition-all duration-300 border ${isDarkMode ? 'bg-slate-800 text-yellow-400 border-slate-700 hover:bg-slate-700' : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100'}`}>
+              {isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}
+            </button>
+
             <div className="relative group">
               <Link to="/admin/push-alerts"> 
-                {unreadCount > 0 && (
-                  <>
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 rounded-full border-2 border-white z-10 animate-ping"></div>
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 rounded-full border-2 border-white z-10 flex items-center justify-center text-[8px] font-bold text-white">{unreadCount}</div>
-                  </>
-                )}
-                <button className="p-3 bg-slate-50 rounded-2xl text-slate-400 group-hover:text-red-600 group-hover:bg-red-50 transition-all duration-300">
-                  <Bell size={22}/>
+                {unreadCount > 0 && <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 rounded-full border-2 border-white dark:border-slate-800 z-10 animate-ping"></div>}
+                <button className={`p-3 rounded-2xl transition-all duration-300 border ${isDarkMode ? 'bg-slate-800 text-slate-400 border-slate-700 hover:text-red-500' : 'bg-slate-50 text-slate-400 border-slate-200 hover:text-red-600'}`}>
+                  <Bell size={20}/>
                 </button>
               </Link>
             </div>
 
-            <button onClick={handleLogout} className="flex items-center gap-2 text-slate-800 font-black text-[11px] uppercase italic bg-slate-100 px-5 py-3 rounded-2xl hover:bg-red-600 hover:text-white transition-all shadow-sm tracking-widest">
+            <button onClick={handleLogout} className={`flex items-center gap-2 font-black text-[11px] uppercase italic px-5 py-3 rounded-2xl transition-all shadow-sm tracking-widest border ${isDarkMode ? 'bg-slate-800 text-gray-200 border-slate-700 hover:bg-red-600 hover:text-white' : 'bg-slate-100 text-slate-800 border-slate-200 hover:bg-red-600 hover:text-white'}`}>
               <LogOut size={16}/> Logout
             </button>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-8 bg-[#F8FAFC]">
+        <main className={`flex-1 overflow-y-auto p-8 transition-colors duration-300 ${isDarkMode ? 'bg-[#0f172a]' : 'bg-[#F8FAFC]'}`}>
           <Outlet context={{ userRole }} />
           <Footer/>
         </main>

@@ -1,20 +1,19 @@
-const jwt = require('jsonwebtoken');
-
 const authorize = (allowedRoles = []) => {
     return (req, res, next) => {
-        const token = req.headers['authorization'];
-        if (!token) return res.status(403).json({ message: "No token provided" });
+        // Token chere amra ekhon ekti static security key check korbo
+        const adminSecret = req.headers['admin-secret-key'];
 
-        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-            if (err) return res.status(401).json({ message: "Unauthorized" });
+        // Ei key-ti backend ar frontend-e match korlei access pabe
+        if (adminSecret === 'JM_IT_GLOBAL_SECURE_KEY_2026') {
+            // Mock user data set kora jeno controller-e req.user.id pay
+            // dhore niche superadmin-er ID = 1
+            req.user = { id: 1, role: 'superadmin' }; 
+            return next();
+        }
 
-            // Role Check
-            if (allowedRoles.length && !allowedRoles.includes(decoded.role)) {
-                return res.status(403).json({ message: "Permission Denied: Access Restricted" });
-            }
-
-            req.user = decoded;
-            next();
+        return res.status(401).json({ 
+            success: false, 
+            message: "Unauthorized: Invalid Security Key!" 
         });
     };
 };

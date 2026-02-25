@@ -23,18 +23,10 @@ import StaffManager from './pages/Admin/StaffManager';
 import TourManager from './pages/Admin/TourManager';
 import BookingManager from './pages/Admin/BookingManager';
 import AnalyticsDashboard from './pages/Admin/AnalyticsDashboard';
-import CommunicationCenter from './pages/Admin/CommunicationCenter';
-import PushNotificationCenter from './pages/Admin/PushNotificationCenter';
+import InboX from './pages/Admin/Inbox';
+import AnnouncementMAnager from './pages/Admin/Announcement';
 import ManageRecruiters from './pages/Admin/ManageRecruiters';
-
-// ✅ Recruiter Pages
-import RecruiterLayout from './pages/Recruiter/RecruiterLayout';
-import RecruiterDashboard from './pages/Recruiter/RecruiterDashboard';
-import RecruiterPostJob from './pages/Recruiter/PostJob';
-
-// Dummy components pore ready korbo
-
-const RecruiterJobs = () => <div className="p-10 bg-white rounded-[40px] shadow-sm font-black italic uppercase text-slate-400">My Posted Jobs - Coming Soon</div>;
+import JobList from './pages/Admin/JobList';
 
 const MainLayout = () => (
   <div className="flex flex-col min-h-screen">
@@ -56,12 +48,13 @@ function App() {
           <Route path="/login" element={<Login />} />
         </Route>
 
-        {/* 🔐 ADMIN LOGIN */}
+        {/* 🔐 ADMIN LOGIN (Jodi alada login page lage) */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* 📊 ADMIN DASHBOARD (Protected) */}
+        {/* 📊 UNIFIED DASHBOARD (Protected) */}
+        {/* Ekhane 'recruiter' add kora holo jate tarao dhukte pare */}
         <Route path="/admin" element={
-          <ProtectedRoute allowedRoles={['superadmin', 'admin', 'editor', 'hr_manager', 'moderator']}>
+          <ProtectedRoute allowedRoles={['superadmin', 'admin', 'hr_manager', 'moderator', 'recruiter']}>
             <AdminLayout />
           </ProtectedRoute>
         }>
@@ -79,29 +72,14 @@ function App() {
           <Route path="tour-packages" element={<TourManager />} />
           <Route path="bookings" element={<BookingManager />} />
           <Route path="analytics" element={<AnalyticsDashboard />} />
-          <Route path="notifications" element={<CommunicationCenter />} />
-          <Route path="push-alerts" element={<PushNotificationCenter />} />
+          <Route path="push-alerts" element={<AnnouncementMAnager />} />
           <Route path="manage-recruiters" element={<ManageRecruiters />} />
+          <Route path="job-list" element={<JobList />} />
+          <Route path="notifications" element={<InboX />} />
         </Route>
 
-        {/* 🏢 RECRUITER DASHBOARD (Protected) */}
-        <Route path="/recruiter" element={
-          <ProtectedRoute allowedRoles={['recruiter']}>
-            <RecruiterLayout />
-          </ProtectedRoute>
-        }>
-          {/* Default: /recruiter dhukle dashboard dekhabe */}
-          <Route index element={<Navigate to="/recruiter/dashboard" replace />} />
-          <Route path="dashboard" element={<RecruiterDashboard />} />
-          <Route path="post-job" element={<RecruiterPostJob />} />
-          <Route path="my-jobs" element={<RecruiterJobs />} />
-          <Route path="applications" element={<div className="p-10 font-black italic uppercase text-slate-400">Candidate Applications List</div>} />
-          <Route path="profile" element={<div className="p-10 font-black italic uppercase text-slate-400">Recruiter Profile Settings</div>} />
-        </Route>
-
-        {/* 🚀 404 PAGE 
-        <Route path="*" element={<h1 className="text-center mt-20 text-4xl font-black italic uppercase tracking-tighter">404 - <span className="text-red-600">Lost in Space</span></h1>} />
-        */}<Route path="*" element={<NotFound />} />
+        {/* 🚀 404 PAGE */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

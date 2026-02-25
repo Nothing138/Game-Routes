@@ -1,95 +1,125 @@
 const db = require('../config/db');
 
+// --- 1. Job Post Kora ---
 exports.postJob = async (req, res) => {
-    // 1. Destructure data match with your Frontend & SQL needs
-    const { title, location, job_type, salary_range, category, description, requirements, last_date } = req.body;
-    const userId = req.user.id; 
-
     try {
-        // 2. Prothome Recruiters table theke ashol ID khuje ber kora
-        // Apnar SQL-e recruiters table-e user_id column ache
-        const [recruiter] = await db.promise().execute('SELECT id, company_name FROM recruiters WHERE user_id = ?', [userId]);
-
-        if (!recruiter || recruiter.length === 0) {
-            return res.status(403).json({ 
-                success: false, 
-                msg: "Vaiya, apnar recruiter profile setup kora nai! Age profile create koren." 
-            });
-        }
-
-        const rId = recruiter[0].id;
-        const cName = recruiter[0].company_name; // SQL table-e company_name lagbe
-
-        // 3. Insert Query (Column name gula apnar SQL table er sathe match kora hoyeche)
-        // Note: SQL-e last_date ar requirements column nai, tai description er sathe merge kora hoyeche ba ignore kora hoyeche
-        const sql = `INSERT INTO jobs 
-            (recruiter_id, job_title, company_name, job_description, country, salary_range, job_type, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`;
-        
-        // Requirements ar Deadline ke description er moddhe dhukiye dilam jeno database-e thake
-        const fullDescription = `${description} \n\nRequirements: ${requirements} \nDeadline: ${last_date}`;
-        
-        const values = [
-            rId, 
-            title, 
-            cName, 
-            fullDescription, 
-            location, // Country column-e location pathachhi
+        const { 
+            job_title, 
+            company_name, 
+            job_description, 
+            country, 
             salary_range, 
-            job_type.toLowerCase(), // SQL enum: 'remote', 'on-site', 'hybrid'
-        ];
+            job_type, 
+            category, 
+            end_date 
+        } = req.body;
+        
+        // req.user theke ID nibe, na pele default 1
+        const posted_by = (req.user && req.user.id) ? req.user.id : 1; 
 
-        await db.promise().execute(sql, values);
+        // Notun job post korle status default 'active' thakbe
+        const sql = `
+            INSERT INTO jobs 
+            (posted_by, job_title, company_name, job_description, country, salary_range, job_type, category, end_date, status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+        `;
 
-        res.status(201).json({ success: true, msg: "Job Posted Successfully! 🚀" });
+        await db.execute(sql, [
+            posted_by, 
+            job_title, 
+            company_name, 
+            job_description, 
+            country, 
+            salary_range, 
+            job_type, 
+            category || 'General', 
+            end_date
+        ]);
+
+        res.status(201).json({ 
+            success: true, 
+            message: "BOMB! Job posted successfully!" 
+        });
 
     } catch (err) {
-        console.error("Database Error:", err);
-        res.status(500).json({ success: false, msg: "Server Error: " + err.message });
+        console.error("Job Post Error:", err);
+        res.status(500).json({ success: false, error: "Database issue", details: err.message });
     }
 };
 
-exports.getDashboardStats = async (req, res) => {
+// --- 2. Admin/Recruiter er jonno shob job (CRUD er jonno) ---
+exports.getAllJobsAdmin = async (req, res) => {
     try {
-        const userId = req.user.id; 
+        const sql = `SELECT * FROM jobs ORDER BY created_at DESC`;
+        const [jobs] = await db.execute(sql);
+        res.json({ success: true, jobs });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
 
-        // 1. Recruiter Profile
-        const [recruiter] = await db.execute('SELECT * FROM recruiters WHERE user_id = ?', [userId]);
-        if (recruiter.length === 0) return res.status(404).json({ msg: "Profile not found" });
-        const rId = recruiter[0].id;
+// --- 3. User Side Job List (Shudhu Active ar Date thakle dekhabe) ---
+exports.getAllJobs = async (req, res) => {
+    try {
+        // Logic: Status 'active' hote hobe AND end_date ajker cheye boro hote hobe
+        const sql = `
+            SELECT jobs.*, users.full_name as posted_by_name 
+            FROM jobs 
+            LEFT JOIN users ON jobs.posted_by = users.id 
+            WHERE jobs.status = 'active' AND (jobs.end_date >= CURDATE() OR jobs.end_date IS NULL)
+            ORDER BY jobs.created_at DESC
+        `;
+        const [jobs] = await db.execute(sql);
+        res.json({ success: true, jobs });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
 
-        // 2. Stats Calculation
-        // Live Vacancies & Total Talents
-        const [jobs] = await db.execute('SELECT COUNT(*) as count FROM jobs WHERE recruiter_id = ? AND status = "active"', [rId]);
-        const [apps] = await db.execute('SELECT COUNT(*) as count FROM job_applications ja JOIN jobs j ON ja.job_id = j.id WHERE j.recruiter_id = ?', [rId]);
-        const [short] = await db.execute('SELECT COUNT(*) as count FROM job_applications ja JOIN jobs j ON ja.job_id = j.id WHERE j.recruiter_id = ? AND ja.status = "shortlisted"', [rId]);
+// --- 4. Job Update Logic (Edit Modal ar Status Toggle er jonno) ---
+exports.updateJob = async (req, res) => {
+    const { id } = req.params;
+    const { 
+        job_title, 
+        company_name, 
+        job_description, 
+        country, 
+        salary_range, 
+        job_type, 
+        category, 
+        end_date,
+        status 
+    } = req.body;
 
-        // Hire Velocity Logic: Average days from application to shortlist
-        const [velocity] = await db.execute(
-            `SELECT AVG(DATEDIFF(application_date, created_at)) as avg_days FROM job_applications ja 
-             JOIN jobs j ON ja.job_id = j.id WHERE j.recruiter_id = ?`, [rId]
-        );
+    try {
+        const sql = `
+            UPDATE jobs SET 
+            job_title = ?, company_name = ?, job_description = ?, 
+            country = ?, salary_range = ?, job_type = ?, 
+            category = ?, end_date = ?, status = ?
+            WHERE id = ?
+        `;
 
-        // Goal Tracking: Suppose target is 20 applicants per month
-        const target = 20;
-        const progress = Math.min(Math.round((apps[0].count / target) * 100), 100);
+        await db.execute(sql, [
+            job_title, company_name, job_description, 
+            country, salary_range, job_type, 
+            category, end_date, status, id
+        ]);
 
-        // Recent Jobs with Applicant Count
-        const [recent] = await db.execute(
-            `SELECT j.*, (SELECT COUNT(*) FROM job_applications WHERE job_id = j.id) as app_count 
-             FROM jobs j WHERE recruiter_id = ? ORDER BY id DESC LIMIT 3`, [rId]
-        );
+        res.json({ success: true, message: "Job updated successfully!" });
+    } catch (err) {
+        console.error("Update Error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
 
-        res.json({
-            company: recruiter[0],
-            stats: {
-                liveVacancies: jobs[0].count,
-                totalTalents: apps[0].count,
-                shortlisted: short[0].count,
-                hireRate: velocity[0].avg_days ? `${Math.abs(Math.round(velocity[0].avg_days))} Days` : "N/A"
-            },
-            goal: { progress, target, current: apps[0].count },
-            recentJobs: recent
-        });
-    } catch (err) { res.status(500).send("Server Error"); }
+// --- 5. Job Delete Logic ---
+exports.deleteJob = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.execute("DELETE FROM jobs WHERE id = ?", [id]);
+        res.json({ success: true, message: "Job deleted from database!" });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
 };

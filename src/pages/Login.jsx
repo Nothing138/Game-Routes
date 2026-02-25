@@ -17,12 +17,14 @@ const Login = () => {
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('role', res.data.role);
 
-            // 🚀 Redirect Logic
-            if (['superadmin', 'editor', 'hr_manager', 'moderator'].includes(res.data.role)) {
-                navigate('/admin/dashboard');
-            } else if (res.data.role === 'recruiter') {
-                navigate('/recruiter/dashboard'); // Jodi Recruiter Dashboard alada thake
+            // 🚀 Unified Redirect Logic
+            const staffRoles = ['superadmin', 'admin', 'hr_manager', 'moderator', 'recruiter'];
+            
+            if (staffRoles.includes(res.data.role)) {
+                // Sobai ekhon ek dashboard-e jabe
+                navigate('/admin/dashboard'); 
             } else {
+                // Normal user hole home page-e jabe
                 navigate('/');
             }
 
@@ -33,32 +35,36 @@ const Login = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-[80vh] px-4">
-            <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-                <h2 className="text-3xl font-bold text-center text-slate-900 mb-6">Welcome Back</h2>
-                <form className="space-y-4" onSubmit={handleLogin}>
+        <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
+            <div className="w-full max-w-md bg-white p-10 rounded-3xl shadow-2xl border border-gray-100">
+                <div className="text-center mb-8">
+                    <h2 className="text-4xl font-black text-slate-900 italic tracking-tighter">GAME ROUTES</h2>
+                    <p className="text-gray-500 font-medium uppercase text-[10px] tracking-widest mt-2">Management Portal</p>
+                </div>
+                
+                <form className="space-y-5" onSubmit={handleLogin}>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                        <label className="block text-xs font-bold text-gray-700 uppercase mb-2 ml-1">Email Address</label>
                         <input 
                             type="email" 
-                            className="w-full mt-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
-                            placeholder="name@company.com" 
+                            className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:bg-white outline-none transition-all" 
+                            placeholder="name@gameroutes.com" 
                             onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Password</label>
+                        <label className="block text-xs font-bold text-gray-700 uppercase mb-2 ml-1">Password</label>
                         <input 
                             type="password" 
-                            className="w-full mt-1 px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
+                            className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:bg-white outline-none transition-all" 
                             placeholder="••••••••" 
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
                     </div>
-                    <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-all">
-                        Login to JM-IT
+                    <button type="submit" className="w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase italic tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-200">
+                        Enter Workspace
                     </button>
                 </form>
             </div>

@@ -7,11 +7,11 @@ const StaffManager = () => {
     const [members, setMembers] = useState([]);
     const [showForm, setShowForm] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({ full_name: '', email: '', password: '', role: 'editor' });
+    const [formData, setFormData] = useState({ full_name: '', email: '', password: '', role: 'admin' });
 
     const fetchMembers = async () => {
         try {
-            // ✅ Ensure this API returns all roles (editor, hr_manager, moderator, recruiter)
+            // ✅ Ensure this API returns all roles (admin, hr_manager, moderator, recruiter)
             const res = await axios.get('http://localhost:5000/api/staff/all-members');
             setMembers(res.data);
         } catch (err) { 
@@ -27,7 +27,7 @@ const StaffManager = () => {
             superadmin: 'bg-purple-600 text-white',
             admin: 'bg-blue-600 text-white',
             recruiter: 'bg-black text-white',
-            editor: 'bg-emerald-600 text-white',
+            admin: 'bg-emerald-600 text-white',
             hr_manager: 'bg-orange-600 text-white',
             moderator: 'bg-slate-600 text-white'
         };
@@ -111,7 +111,7 @@ const StaffManager = () => {
                     <div className="space-y-1">
                         <label className="text-[9px] font-black uppercase ml-2">Assigned Role</label>
                         <select className="w-full p-4 bg-gray-50 rounded-2xl outline-none border-2 border-transparent focus:border-red-600 font-black italic uppercase" value={formData.role} onChange={(e)=>setFormData({...formData, role: e.target.value})}>
-                            <option value="editor">Editor</option>
+                            <option value="admin">admin</option>
                             <option value="hr_manager">HR Manager</option>
                             <option value="moderator">Moderator</option>
                             <option value="recruiter">Recruiter</option>

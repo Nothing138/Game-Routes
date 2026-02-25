@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const recruiterController = require('../controllers/recruiterController'); // Controller connect
-const authMiddleware = require('../middleware/authMiddleware');
+const { createRecruiter, getProfile, updateRecruiter } = require('../controllers/recruiterController');
+const upload = require('../middleware/uploadMiddleware'); // Tumar upload middleware
 
-// Router ekhon controller er function gulo use korbe
-router.get('/profile', authMiddleware, recruiterController.getProfile);
-router.get('/message-stats', authMiddleware, recruiterController.getMessageStats);
+router.post('/register', upload.fields([{ name: 'logo' }, { name: 'docs' }]), createRecruiter);
+router.get('/profile/:userId', getProfile);
+router.post('/update', upload.fields([{ name: 'logo' }]), updateRecruiter);
 
 module.exports = router;
