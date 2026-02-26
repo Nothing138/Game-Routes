@@ -108,7 +108,7 @@ const CountryList = () => {
         <div className="space-y-8 p-4">
             {/* Header & Add Form (Remains same but polished) */}
             <div className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100">
-                <h2 className="text-2xl font-black italic uppercase tracking-tighter mb-6">Visa <span className="text-red-600">Pricing Engine</span></h2>
+                <h2 className="text-2xl font-black italic uppercase tracking-tighter mb-6">Visa <span className="text-red-600">Pricing</span></h2>
                 <form onSubmit={handleAddCountry} className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <input value={formData.name} onChange={(e)=>setFormData({...formData, name:e.target.value})} placeholder="Country Name" className="p-3 bg-gray-50 border-none rounded-2xl text-xs font-bold" required />
                     <select value={formData.categoryId} onChange={(e)=>setFormData({...formData, categoryId:e.target.value})} className="p-3 bg-gray-50 border-none rounded-2xl text-xs font-bold appearance-none" required>

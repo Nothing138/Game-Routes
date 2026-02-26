@@ -1,164 +1,128 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
-} from 'recharts';
-import { TrendingUp, Users, DollarSign, Briefcase, FileText, Download, Loader2, Globe, CheckCircle } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Users, Briefcase, FileText, DollarSign, Clock, TrendingUp, Calendar } from 'lucide-react';
 
-const AnalyticsDashboard = () => {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+const Analytics = () => {
+    const [data, setData] = useState(null);
+    const [filter, setFilter] = useState('month');
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, []);
+    const fetchData = async () => {
+        try {
+            const res = await axios.get(`http://localhost:5000/api/admin/stats?filter=${filter}`);
+            if (res.data.success) setData(res.data);
+        } catch (err) {
+            console.error("Fetch Error:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const fetchAnalytics = async () => {
-    try {
-      // Backend api-te token pathate hobe jodi middleware thake
-      const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/admin/stats', {
-          headers: { Authorization: `Bearer ${token}` }
-      });
-      setStats(res.data);
-    } catch (err) {
-      console.error("Analytics Sync Failed", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    useEffect(() => { fetchData(); }, [filter]);
 
-  // --- PDF Export Logic ---
-  const exportPDF = () => {
-    if (!stats || !stats.recentBookings || stats.recentBookings.length === 0) {
-        alert("System Alert: No transaction logs found to export.");
-        return;
-    }
-
-    const doc = new jsPDF();
-    doc.setFontSize(20);
-    doc.setTextColor(30, 41, 59);
-    doc.text("GAME ROUTES AGENCY - EXECUTIVE REPORT", 14, 22);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Timestamp: ${new Date().toLocaleString()}`, 14, 30);
-    doc.text(`Visa Success Rate: ${stats.visaSuccess || 0}%`, 14, 35);
-    doc.text(`Operational Revenue: $${(stats.revenue || 0).toLocaleString()}`, 14, 40);
-
-    const tableColumn = ["Client Name", "Package", "Amount", "Status"];
-    const tableRows = stats.recentBookings.map(item => [
-      item.client_name,
-      item.package,
-      `$${item.price}`,
-      item.status ? item.status.toUpperCase() : 'PENDING'
-    ]);
-
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 50,
-      theme: 'grid',
-      headStyles: { fillColor: [185, 28, 28], fontStyle: 'bold' },
-      styles: { fontSize: 8, fontStyle: 'italic' }
-    });
-
-    doc.save(`GR_Executive_Report_${Date.now()}.pdf`);
-  };
-
-  // --- Loading State ---
-  if (loading) return (
-    <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
-      <Loader2 className="animate-spin text-red-600" size={40} />
-      <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Synchronizing Data</span>
-    </div>
-  );
-
-  // --- Empty State Check ---
-  if (!stats) return (
-    <div className="h-[60vh] flex items-center justify-center text-slate-500 font-bold">
-        Error loading analytics. Please check backend connection.
-    </div>
-  );
-
-  return (
-    <div className="space-y-8 animate-in fade-in duration-700">
-      
-      {/* KPI Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Gross Revenue" value={`$${(stats.revenue || 0).toLocaleString()}`} icon={<DollarSign/>} color="bg-emerald-600" />
-        <StatCard title="Total Bookings" value={stats.bookings || 0} icon={<Briefcase/>} color="bg-red-700" />
-        <StatCard title="Visa Success" value={`${stats.visaSuccess || '0'}%`} icon={<Globe/>} color="bg-blue-700" />
-        <StatCard title="Staff Members" value={stats.staff || 0} icon={<Users/>} color="bg-slate-800" />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Operational Growth Chart */}
-        <div className="lg:col-span-2 bg-white p-10 rounded-[45px] shadow-sm border border-gray-100">
-          <div className="flex justify-between items-center mb-10">
-            <h3 className="text-xl font-black italic uppercase tracking-tighter flex items-center gap-2 text-slate-900">
-              <TrendingUp className="text-red-600" /> Growth Trajectory
-            </h3>
-          </div>
-          <div className="h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
-              {/* Fallback to empty array if growth is null */}
-              <AreaChart data={stats.growth || []}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: '800', fill: '#94a3b8'}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: '800', fill: '#94a3b8'}} />
-                <Tooltip 
-                    contentStyle={{borderRadius: '15px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}}
-                    cursor={{stroke: '#EF4444', strokeWidth: 2}}
-                />
-                <Area type="monotone" dataKey="bookings" stroke="#B91C1C" strokeWidth={4} fillOpacity={0.1} fill="#EF4444" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+    if (loading) return (
+        <div className="h-screen flex items-center justify-center bg-[#07090c] text-red-600 font-black italic animate-pulse">
+            LOADING PREMIUM SYSTEM ANALYTICS...
         </div>
+    );
 
-        {/* Intelligence Hub */}
-        <div className="bg-slate-900 p-10 rounded-[45px] shadow-2xl text-white flex flex-col justify-between overflow-hidden relative">
-          <CheckCircle className="absolute -bottom-10 -right-10 text-white opacity-5" size={200} />
-          
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 text-red-500 mb-4">
-               <FileText size={20} />
-               <span className="text-[10px] font-black uppercase tracking-widest">Platform Intelligence</span>
+    return (
+        <div className="p-6 md:p-10 min-h-screen bg-[#07090c] text-zinc-300 font-sans">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+                <div>
+                    <h2 className="text-5xl font-black text-white italic uppercase tracking-tighter">
+                        ANALYTICS <span className="text-red-600">DASHBOARD</span>
+                    </h2>
+                    <p className="text-zinc-500 text-xs mt-1 font-bold uppercase tracking-widest">Real-time business performance tracking</p>
+                </div>
+
+                {/* Filter Switcher */}
+                <div className="flex p-1 bg-[#11141a] border border-zinc-800 rounded-2xl shadow-2xl">
+                    {['week', 'month'].map((type) => (
+                        <button
+                            key={type}
+                            onClick={() => setFilter(type)}
+                            className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter transition-all duration-300 ${
+                                filter === type ? 'bg-red-600 text-white shadow-lg' : 'text-zinc-500 hover:text-white'
+                            }`}
+                        >
+                            {type === 'week' ? 'Weekly View' : 'Monthly View'}
+                        </button>
+                    ))}
+                </div>
             </div>
-            <h2 className="text-3xl font-black italic uppercase tracking-tighter leading-tight mb-6">
-              Executive <br /> <span className="text-red-600 underline">Summary</span>
-            </h2>
-            <p className="text-slate-400 text-sm font-medium leading-relaxed italic">
-              Platform analysis indicates a total of {stats.bookings || 0} processed transaction logs. 
-              The current Visa success rate is stable at {stats.visaSuccess || 0}%. 
-            </p>
-          </div>
 
-          <div className="space-y-4 relative z-10">
-            <button 
-              onClick={exportPDF}
-              className="group w-full bg-white text-black p-5 rounded-2xl font-black uppercase italic text-xs tracking-[0.2em] hover:bg-red-600 hover:text-white transition-all duration-300 flex items-center justify-center gap-3 shadow-xl"
-            >
-              <Download className="group-hover:bounce" size={18}/> Export Report (PDF)
-            </button>
-          </div>
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                <StatCard label="Total Revenue" val={`$${data.stats.totalRevenue}`} icon={<DollarSign color="#ef4444"/>} color="border-red-600/20" />
+                <StatCard label="Candidates" val={data.stats.totalUsers} icon={<Users color="#3b82f6"/>} color="border-blue-600/20" />
+                <StatCard label="Open Positions" val={data.stats.totalJobs} icon={<Briefcase color="#10b981"/>} color="border-emerald-600/20" />
+                <StatCard label="Total Apps" val={data.stats.totalApps} icon={<FileText color="#f59e0b"/>} color="border-orange-600/20" />
+            </div>
+
+            {/* Main Chart Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+                <div className="lg:col-span-2 bg-[#11141a] border border-zinc-800 p-8 rounded-[40px] shadow-2xl relative overflow-hidden">
+                    <div className="flex justify-between items-center mb-8">
+                        <h3 className="text-white font-black italic uppercase tracking-tighter flex items-center gap-2">
+                            <TrendingUp size={20} className="text-red-600"/> Income Growth
+                        </h3>
+                    </div>
+                    <div className="h-[350px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={data.chartData}>
+                                <defs>
+                                    <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+                                <XAxis dataKey="label" stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} tick={{fill: '#9ca3af', fontWeight: 'bold'}} />
+                                <YAxis stroke="#4b5563" fontSize={10} tickLine={false} axisLine={false} tick={{fill: '#9ca3af'}} />
+                                <Tooltip 
+                                    contentStyle={{ backgroundColor: '#07090c', border: '1px solid #27272a', borderRadius: '15px' }}
+                                    itemStyle={{ color: '#ef4444', fontWeight: 'bold' }}
+                                />
+                                <Area type="monotone" dataKey="income" stroke="#ef4444" strokeWidth={4} fillOpacity={1} fill="url(#colorIncome)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Side Table - Recent Bookings */}
+                <div className="bg-[#11141a] border border-zinc-800 rounded-[40px] overflow-hidden flex flex-col shadow-2xl">
+                    <div className="p-6 border-b border-zinc-800 font-black italic uppercase text-white flex items-center gap-2">
+                        <Clock className="text-red-600" size={18} /> Recent Activity
+                    </div>
+                    <div className="flex-1 overflow-y-auto max-h-[400px]">
+                        {data.recentBookings.map((b) => (
+                            <div key={b.id} className="p-4 border-b border-zinc-800/50 hover:bg-white/5 transition-all flex justify-between items-center">
+                                <div>
+                                    <p className="text-white text-xs font-black uppercase italic">{b.client_name}</p>
+                                    <p className="text-zinc-500 text-[10px] font-bold">{b.package}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-white text-xs font-black">${b.price}</p>
+                                    <span className="text-[8px] font-black uppercase text-red-600 tracking-tighter bg-red-600/10 px-2 py-0.5 rounded-full">{b.status}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
-const StatCard = ({ title, value, icon, color }) => (
-  <div className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100 hover:border-red-600 transition-colors duration-300">
-    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg ${color}`}>
-        {React.cloneElement(icon, { size: 24 })}
+const StatCard = ({ label, val, icon, color }) => (
+    <div className={`bg-[#11141a] border ${color} p-8 rounded-[35px] hover:scale-105 transition-all duration-500 shadow-xl group`}>
+        <div className="mb-4 bg-zinc-900/50 w-fit p-3 rounded-2xl group-hover:bg-red-600/10 transition-colors">{icon}</div>
+        <h4 className="text-4xl font-black text-white tracking-tighter mb-1">{val}</h4>
+        <p className="text-[10px] uppercase text-zinc-500 font-black italic tracking-widest">{label}</p>
     </div>
-    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">{title}</p>
-    <h4 className="text-3xl font-black italic text-slate-900 tracking-tighter">{value}</h4>
-  </div>
 );
 
-export default AnalyticsDashboard;
+export default Analytics;

@@ -72,7 +72,7 @@ const AnnouncementManager = () => {
                             <Megaphone size={32} />
                         </div>
                         <div>
-                            <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">Broadcast Center</h2>
+                            <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter">ANNOUNCEMENT</h2>
                             <p className="text-zinc-500 text-sm">Create and manage live scrolling announcements.</p>
                         </div>
                     </div>

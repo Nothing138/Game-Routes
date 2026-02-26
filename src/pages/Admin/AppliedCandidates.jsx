@@ -92,7 +92,7 @@ const AppliedCandidates = () => {
             {/* --- TOP BOMB CONTROLS --- */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                 <div>
-                    <h2 className="text-4xl font-black italic uppercase tracking-tighter">Talent <span className="text-red-600">Pipeline</span></h2>
+                    <h2 className="text-4xl font-black italic uppercase tracking-tighter">CANDIDATE <span className="text-red-600">LIST</span></h2>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Total {filteredData.length} Applications Found</p>
                 </div>
 

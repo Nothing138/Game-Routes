@@ -319,59 +319,106 @@ router.delete('/recruiters/:id', async (req, res) => {
 // Get Analytics Stats
 router.get('/stats', async (req, res) => {
     try {
-        // 1. Total Revenue (Joining bookings with packages to get the price)
+        const { filter = 'month' } = req.query; // 'week' or 'month' filter ashe frontend theke
+
+       
+        const [users] = await db.query("SELECT COUNT(*) as total FROM users WHERE role = 'candidate'");
+        const [jobs] = await db.query("SELECT COUNT(*) as total FROM jobs");
+        const [apps] = await db.query("SELECT COUNT(*) as total FROM job_applications");
         const [revenue] = await db.query(`
-            SELECT SUM(p.price) as total 
-            FROM tour_bookings b 
+            SELECT SUM(p.price) as total FROM tour_bookings b 
             JOIN tour_packages p ON b.package_id = p.id
         `);
-        
-        // 2. Staff Count
-        const [staff] = await db.query("SELECT COUNT(*) as total FROM users WHERE role != 'candidate'");
-        
-        // 3. Total Bookings
-        const [bookings] = await db.query("SELECT COUNT(*) as total FROM tour_bookings");
 
-        // 4. Real Visa Success Rate
-        // Note: Apnar table-e column name status kina check korben
+        
+        let chartQuery = "";
+        if (filter === 'week') {
+            
+            chartQuery = `
+                SELECT DAYNAME(b.booking_date) as label, SUM(p.price) as income
+                FROM tour_bookings b
+                JOIN tour_packages p ON b.package_id = p.id
+                WHERE b.booking_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                GROUP BY label, b.booking_date 
+                ORDER BY b.booking_date ASC`;
+        } else {
+            
+            chartQuery = `
+                SELECT MONTHNAME(b.booking_date) as label, SUM(p.price) as income
+                FROM tour_bookings b
+                JOIN tour_packages p ON b.package_id = p.id
+                GROUP BY label, MONTH(b.booking_date)
+                ORDER BY MONTH(b.booking_date) ASC LIMIT 6`;
+        }
+        const [chartData] = await db.query(chartQuery);
+
+        
         const [visaStats] = await db.query(`
             SELECT 
                 COUNT(*) as total_apps,
                 SUM(CASE WHEN application_status = 'approved' THEN 1 ELSE 0 END) as approved_apps
             FROM visa_applications
         `);
+        const successRate = visaStats[0].total_apps > 0 
+            ? Math.round((visaStats[0].approved_apps / visaStats[0].total_apps) * 100) 
+            : 0;
+
         
-        const totalApps = visaStats[0].total_apps || 0;
-        const approvedApps = visaStats[0].approved_apps || 0;
-        const successRate = totalApps > 0 ? Math.round((approvedApps / totalApps) * 100) : 0;
-
-        // 5. Recent Bookings for PDF (Fixed Join)
         const [recentBookings] = await db.query(`
-            SELECT b.client_name, p.title as package, p.price, b.status 
+            SELECT b.id, u.full_name as client_name, p.title as package, p.price, b.status 
             FROM tour_bookings b 
+            JOIN users u ON b.user_id = u.id 
             JOIN tour_packages p ON b.package_id = p.id 
-            ORDER BY b.id DESC LIMIT 10
+            ORDER BY b.id DESC LIMIT 8
         `);
 
-        // 6. Monthly Growth
-        const [growth] = await db.query(`
-            SELECT MONTHNAME(booking_date) as name, COUNT(*) as bookings 
-            FROM tour_bookings 
-            GROUP BY MONTH(booking_date) 
-            ORDER BY MONTH(booking_date) ASC LIMIT 6
-        `);
-
+        
         res.json({
-            revenue: revenue[0].total || 0,
-            staff: staff[0].total,
-            bookings: bookings[0].total,
-            visaSuccess: successRate,
-            recentBookings: recentBookings || [],
-            growth: growth || []
+            success: true,
+            stats: {
+                totalUsers: users[0].total,
+                totalJobs: jobs[0].total,
+                totalApps: apps[0].total,
+                totalRevenue: revenue[0].total || 0,
+                visaSuccess: successRate
+            },
+            chartData: chartData || [],
+            recentBookings: recentBookings || []
         });
+
     } catch (err) {
-        console.error("Stats Error:", err);
-        res.status(500).json({ error: "Database synchronization failed." });
+        console.error("Critical Analytics Error:", err);
+        res.status(500).json({ success: false, error: "Database synchronization failed." });
+    }
+});
+
+// --- INCOME CHART DATA (WEEKLY/MONTHLY) ---
+router.get('/income-chart', async (req, res) => {
+    const { filter } = req.query; // 'week' or 'month'
+    try {
+        let query = "";
+        if (filter === 'week') {
+            
+            query = `
+                SELECT DAYNAME(b.booking_date) as label, SUM(p.price) as income
+                FROM tour_bookings b
+                JOIN tour_packages p ON b.package_id = p.id
+                WHERE b.booking_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                GROUP BY label ORDER BY b.booking_date ASC`;
+        } else {
+            
+            query = `
+                SELECT MONTHNAME(b.booking_date) as label, SUM(p.price) as income
+                FROM tour_bookings b
+                JOIN tour_packages p ON b.package_id = p.id
+                GROUP BY label, MONTH(b.booking_date)
+                ORDER BY MONTH(b.booking_date) ASC LIMIT 6`;
+        }
+
+        const [rows] = await db.query(query);
+        res.json({ success: true, chartData: rows });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 

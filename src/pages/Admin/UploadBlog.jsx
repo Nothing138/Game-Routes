@@ -40,7 +40,7 @@ const UploadBlog = () => {
                     <Sparkles size={14}/> Creator Mode
                 </div>
                 <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-none">
-                    Write Your <span className="text-red-600 underline decoration-black underline-offset-8">Legacy</span>
+                    Write Your <span className="text-red-600 underline decoration-black underline-offset-8">BLOG</span>
                 </h2>
                 <p className="text-gray-400 font-bold text-xs uppercase tracking-widest pt-2">Craft stories that move the industry</p>
             </div>

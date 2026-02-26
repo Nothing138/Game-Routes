@@ -32,7 +32,8 @@ const staffRoutes = require('./routes/staffRoutes');
 const recruiterRoutes = require('./routes/recruiterRoutes');
 const jobRoutes = require('./routes/jobRoutes');
 const messageRoutes = require('./routes/messageRoutes');
-const announcementRoutes = require('./routes/announcementRoutes'); // Notun Route
+const announcementRoutes = require('./routes/announcementRoutes'); 
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
 // ✅ Routes Registration
 app.use('/api/auth', authRoutes);
@@ -44,6 +45,7 @@ app.use('/api/recruiter', recruiterRoutes);
 app.use('/api/admin/jobs', jobRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/announcements', announcementRoutes); 
+app.use('/api/analytics', analyticsRoutes);
 
 // Static Folder for Images
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));

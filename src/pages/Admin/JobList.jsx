@@ -80,7 +80,7 @@ const JobList = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6">
                 <div>
                     <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase italic">
-                        Live <span className="text-red-600">Operations</span>
+                        Live <span className="text-red-600">JOB </span>Operations
                     </h2>
                     <p className="text-zinc-500 font-medium mt-2">Manage your career broadcasts and track performance.</p>
                 </div>
