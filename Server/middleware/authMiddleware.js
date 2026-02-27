@@ -4,7 +4,7 @@ const authorize = (allowedRoles = []) => {
         const adminSecret = req.headers['admin-secret-key'];
 
         // Ei key-ti backend ar frontend-e match korlei access pabe
-        if (adminSecret === 'JM_IT_GLOBAL_SECURE_KEY_2026') {
+        if (adminSecret === 'JM_IT_GLOBAL_SECURE_KEY_2024') {
             // Mock user data set kora jeno controller-e req.user.id pay
             // dhore niche superadmin-er ID = 1
             req.user = { id: 1, role: 'superadmin' }; 

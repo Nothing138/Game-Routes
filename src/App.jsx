@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Footer from './components/Footer';
 import NotFound from './pages/NotFound';
+import Register from './pages/Register';
 
 // Admin Pages
 import AdminLogin from './pages/Admin/AdminLogin';
@@ -45,11 +46,12 @@ function App() {
         {/* 🌐 PUBLIC PAGES */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
         </Route>
 
-        {/* 🔐 ADMIN LOGIN (Jodi alada login page lage) */}
-        <Route path="/admin/login" element={<AdminLogin />} />
+        {/* 🔐 ADMIN LOGIN (Jodi alada login page lage) 
+        <Route path="/admin/login" element={<AdminLogin />} />*/}
 
         {/* 📊 UNIFIED DASHBOARD (Protected) */}
         {/* Ekhane 'recruiter' add kora holo jate tarao dhukte pare */}

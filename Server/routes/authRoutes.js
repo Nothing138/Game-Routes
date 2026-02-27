@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const { auth, authorize } = require('../middleware/authMiddleware');
+const { login, register } = require('../controllers/authController');
 
 // --- 1. DASHBOARD SUMMARY (Everyone in Admin Panel) ---
 router.get('/dashboard-stats', auth, async (req, res) => {
@@ -204,5 +205,8 @@ router.delete('/notifications/:id', auth, authorize(['superadmin', 'moderator'])
         res.json({ success: true, message: "Notification purged." });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
+//router.post('/login', login); 
+//router.post('/register', register);
 
 module.exports = router;

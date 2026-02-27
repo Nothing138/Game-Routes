@@ -50,7 +50,7 @@ router.post('/login', async (req, res) => {
         // Generate JWT Token
         const token = jwt.sign(
             { id: user.id, role: user.role }, 
-            'YOUR_SECRET_KEY', // Eikhane icchamoto ekta string den
+            'jmit_global_secret_2024', // Eikhane icchamoto ekta string den
             { expiresIn: '1d' }
         );
 
