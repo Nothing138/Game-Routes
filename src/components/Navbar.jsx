@@ -1,223 +1,240 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, UserPlus, LogIn, X, ChevronDown, LogOut } from 'lucide-react';
-import Swal from 'sweetalert2'; // Logout er jonno
-import { navLinks, services } from '../constants';
+import { 
+  Sun, Moon, Globe, Phone, Clock, Search, Menu, X, 
+  Home, Briefcase, GraduationCap, PlaneTakeoff, 
+  Handshake, LogIn, UserPlus, ArrowRight, Facebook, Instagram, Twitter, Youtube, ChevronDown
+} from 'lucide-react';
 import logoImg from '../assets/logo_game_routes.png';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
+  const [isDarkMode, setIsDarkMode] = useState(() => 
+    localStorage.getItem('theme') === 'dark' || 
+    (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  );
   
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Login status check on mount and whenever localStorage changes
+  // 🌗 Dark Mode Logic
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
-  }, [location]); // Path change holeo re-check korbe
-
-  // Dark Mode Logic (Fixed)
-  useEffect(() => {
+    const root = window.document.documentElement;
     if (isDarkMode) {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
       localStorage.setItem('theme', 'dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
       localStorage.setItem('theme', 'light');
     }
   }, [isDarkMode]);
 
+  // 📜 Scroll Logic
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Logout Function
-  const handleLogout = () => {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: "You will be logged out from GAMEROUTES!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, Logout'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('role'); // jodi thake
-        setIsLoggedIn(false);
-        navigate('/');
-        Swal.fire('Logged Out!', 'Successfully logged out.', 'success');
-      }
-    });
+  const getActiveIcon = (path) => {
+    const icons = {
+      '/': <Home size={18} />,
+      '/study': <GraduationCap size={18} />,
+      '/work': <Briefcase size={18} />,
+      '/migrate': <PlaneTakeoff size={18} />,
+      '/recruiter': <Handshake size={18} />,
+    };
+    return icons[path] || <Home size={18} />;
   };
 
+  const navItems = [
+    { name: 'Home', path: '/' },
+    { name: 'Study', path: '/study' },
+    { name: 'Work', path: '/work' },
+    { name: 'Invest', path: '/invest' },
+    { name: 'Migrate', path: '/migrate' },
+    { name: 'Employer', path: '/employer' },
+    { name: 'Recruiter', path: '/recruiter' },
+  ];
+
   return (
-    <>
-      <nav className={`fixed w-full z-[100] transition-all duration-500 ${
-        scrolled ? 'bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg shadow-xl py-3' : 'bg-transparent py-6'
-      }`}>
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          
-          {/* 🚀 LOGO SECTION */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center overflow-hidden rounded-xl bg-white shadow-md border border-slate-100 group-hover:scale-110 transition-transform duration-300">
-              <img src={logoImg} alt="Logo" className="w-full h-full object-cover" />
+    <header className="fixed w-full z-[100] font-sans">
+      {/* 💎 1. TOP UTILITY BAR (Desktop Only) */}
+      <div className={`hidden lg:block transition-all duration-500 bg-slate-900 text-white/80 ${scrolled ? 'h-0 opacity-0 overflow-hidden' : 'h-10 opacity-100'}`}>
+        <div className="max-w-[1440px] mx-auto px-8 h-full flex justify-between items-center text-[11px] font-medium tracking-widest">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 border-r border-white/10 pr-6 uppercase">
+              <Clock size={12} className="text-yellow-400" /> Mon - Sat: 9am - 6pm
             </div>
-            <div className="flex flex-col">
-              <span className="text-xl md:text-2xl font-black tracking-tighter leading-none text-slate-900 dark:text-white uppercase italic">
-                <span className="text-blue-600">GAMEROUTES</span>
+            <div className="flex items-center gap-4">
+              <Facebook size={14} className="hover:text-blue-400 cursor-pointer transition-colors" />
+              <Instagram size={14} className="hover:text-pink-400 cursor-pointer transition-colors" />
+              <Twitter size={14} className="hover:text-sky-400 cursor-pointer transition-colors" />
+            </div>
+          </div>
+          <div className="flex items-center gap-8 uppercase">
+            <a href="tel:+48222085497" className="hover:text-white transition-colors flex items-center gap-2">
+              <Phone size={12} className="text-yellow-400" /> +48 22 208 5497
+            </a>
+            <div className="flex items-center gap-2 cursor-pointer group">
+              <Globe size={12} className="text-yellow-400 group-hover:rotate-180 transition-transform duration-700" />
+              <span className="group-hover:text-white">English</span>
+              <ChevronDown size={10} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 🚀 2. MAIN NAVIGATION */}
+      <nav className={`transition-all duration-500 border-b ${
+        scrolled 
+        ? 'bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl py-3 shadow-lg border-transparent' 
+        : 'bg-white dark:bg-slate-900 py-5 border-slate-100 dark:border-slate-800'
+      }`}>
+        <div className="max-w-[1440px] mx-auto px-6 lg:px-8 flex justify-between items-center">
+          
+          {/* LOGO */}
+          <Link to="/" className="flex items-center gap-4 group">
+            <div className="relative">
+                <img src={logoImg} alt="Logo" className="h-10 lg:h-12 w-auto transition-transform duration-700 group-hover:scale-110" />
+            </div>
+            <div className="hidden sm:flex flex-col">
+              <span className="text-xl lg:text-2xl font-black tracking-tighter text-slate-900 dark:text-white uppercase leading-none">
+                GAME<span className="text-blue-600">ROUTES</span>
               </span>
+              <span className="text-[10px] font-bold text-blue-600 dark:text-yellow-500 uppercase tracking-[0.3em] mt-1">Official Portal</span>
             </div>
           </Link>
 
-          {/* DESKTOP MENU */}
-          <div className="hidden lg:flex items-center gap-8">
-            <ul className="flex gap-8 list-none">
-              {navLinks.map((link) => (
-                <li key={link.id}>
-                  <Link to={link.path} className={`text-[11px] font-black uppercase tracking-[0.15em] transition-all ${
-                    location.pathname === link.path ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600'
-                  }`}>
-                    {link.title}
-                  </Link>
-                </li>
-              ))}
+          {/* 💻 DESKTOP MENU */}
+          <div className="hidden lg:flex items-center gap-2">
+            <ul className="flex items-center bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <li key={item.name}>
+                    <Link to={item.path} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-wider transition-all relative ${
+                      isActive ? 'text-slate-900' : 'text-slate-500 dark:text-slate-400 hover:text-blue-600'
+                    }`}>
+                      {isActive && (
+                        <motion.span layoutId="premiumActive" className="absolute inset-0 bg-yellow-400 shadow-md rounded-xl z-[-1]" transition={{ type: 'spring', duration: 0.5 }} />
+                      )}
+                      {isActive && getActiveIcon(item.path)}
+                      {item.name}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
-
-            {/* SERVICES DROPDOWN */}
-            <div className="relative group cursor-pointer">
-              <button className="text-[11px] font-black uppercase tracking-[0.15em] text-slate-600 dark:text-slate-300 flex items-center gap-1 group-hover:text-blue-600 transition-colors">
-                Services <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-300" />
+            
+            <div className="flex items-center gap-3 ml-4">
+               <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-yellow-400 border border-slate-200 dark:border-slate-700 transition-all">
+                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
-              <div className="absolute top-full -left-10 mt-4 w-64 bg-white dark:bg-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-2xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 border border-slate-50 dark:border-slate-700">
-                {services.map((service) => (
-                  <Link key={service.title} to={service.path} className="flex items-center gap-4 px-4 py-3 hover:bg-blue-50 dark:hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-200 text-sm font-bold transition-all">
-                    <span className="text-xl">{service.icon}</span> {service.title}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* DARK MODE BUTTON */}
-            <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-yellow-400 hover:scale-110 transition-all">
-              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-
-            {/* CONDITIONAL BUTTON (Join Us or Logout) */}
-            {!isLoggedIn ? (
               <button 
-                onClick={() => setShowJoinModal(true)}
-                className="px-7 py-3 bg-slate-900 dark:bg-blue-600 text-white text-[11px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-600 dark:hover:bg-blue-700 transition-all shadow-lg active:scale-95"
+                onClick={() => setShowJoinModal(true)} 
+                className="px-8 py-3 bg-slate-900 dark:bg-blue-600 text-white text-[12px] font-black uppercase tracking-[0.2em] rounded-xl hover:shadow-xl transition-all active:scale-95"
               >
                 Join Us
               </button>
-            ) : (
-              <button 
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white text-[11px] font-black uppercase tracking-widest rounded-xl hover:bg-red-700 transition-all shadow-lg active:scale-95"
-              >
-                <LogOut size={16} /> Logout
-              </button>
-            )}
+            </div>
           </div>
 
-          {/* MOBILE TOGGLE */}
-          <div className="lg:hidden flex items-center gap-4">
-            <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 text-slate-600 dark:text-yellow-400">
-              {isDarkMode ? <Sun size={22} /> : <Moon size={22} />}
+          {/* 📱 MOBILE TOGGLE */}
+          <div className="lg:hidden flex items-center gap-3">
+            <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2.5 text-slate-600 dark:text-yellow-400">
+                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
-            <button onClick={() => setIsOpen(true)} className="p-2 text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 rounded-lg">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+            <button onClick={() => setIsOpen(true)} className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white">
+              <Menu size={24} />
             </button>
           </div>
         </div>
       </nav>
 
-      {/* --- JOIN US MODAL --- */}
+      {/* 📱 3. MOBILE FULL-SCREEN MENU */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsOpen(false)} className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[140]" />
+            <motion.div 
+              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 right-0 z-[150] w-full max-w-sm bg-white dark:bg-slate-950 flex flex-col p-8 shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-12">
+                 <img src={logoImg} alt="Logo" className="h-10" />
+                 <button onClick={() => setIsOpen(false)} className="p-3 bg-slate-100 dark:bg-slate-800 rounded-2xl dark:text-white"><X size={28}/></button>
+              </div>
+              <div className="space-y-6 flex-grow overflow-y-auto">
+                {navItems.map((item, idx) => (
+                  <motion.div key={item.name} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.1 }}>
+                    <Link to={item.path} onClick={() => setIsOpen(false)} className="group text-3xl font-black uppercase italic tracking-tighter text-slate-900 dark:text-white flex items-center gap-4">
+                      <span className="text-blue-600 text-xs not-italic font-bold tracking-widest">0{idx+1}</span> 
+                      <span className="group-hover:pl-4 transition-all duration-300 group-hover:text-blue-600">{item.name}</span>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+              <div className="mt-auto pt-10 border-t border-slate-100 dark:border-slate-800">
+                 <button onClick={() => {setShowJoinModal(true); setIsOpen(false)}} className="w-full py-5 bg-blue-600 text-white font-black uppercase tracking-widest rounded-2xl text-xl shadow-lg">Get Started</button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* 🎭 4. PREMIUM JOIN US MODAL */}
       <AnimatePresence>
         {showJoinModal && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowJoinModal(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden p-8 border border-white/20"
-            >
-              <button onClick={() => setShowJoinModal(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"><X size={20} className="dark:text-white"/></button>
-              
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                   <UserPlus className="text-blue-600" size={32} />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowJoinModal(false)} className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl overflow-hidden border border-white/10">
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 via-blue-500 to-indigo-600" />
+              <div className="p-10 lg:p-14">
+                <div className="flex justify-end absolute top-8 right-8">
+                  <button onClick={() => setShowJoinModal(false)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <X size={24} className="dark:text-white" />
+                  </button>
                 </div>
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase italic tracking-tight">Ready to Start?</h3>
-                <p className="text-slate-500 dark:text-slate-400 text-sm mt-2 font-medium">Choose an option to access your portal</p>
-              </div>
-
-              <div className="space-y-4">
-                <button onClick={() => {navigate('/login'); setShowJoinModal(false)}} className="w-full flex items-center justify-between p-5 bg-slate-50 dark:bg-slate-800 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 rounded-2xl transition-all group">
-                  <div className="flex items-center gap-4">
-                    <LogIn size={24} className="text-blue-600 group-hover:text-white" />
-                    <div className="text-left">
-                      <p className="font-black text-sm uppercase tracking-wider">Login</p>
-                      <p className="text-[10px] opacity-70 font-bold uppercase">Welcome back, Traveler</p>
+                <div className="text-center mb-10">
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white uppercase italic">Start Your Journey</h3>
+                  <p className="text-slate-500 dark:text-slate-400 font-medium mt-2 uppercase tracking-widest text-[10px]">Join GameRoutes Global Solutions</p>
+                </div>
+                <div className="grid gap-5">
+                  <button onClick={() => {navigate('/login'); setShowJoinModal(false)}} className="group flex items-center justify-between p-6 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-900 dark:hover:bg-blue-600 rounded-[2rem] transition-all duration-300">
+                    <div className="flex items-center gap-6">
+                      <div className="w-14 h-14 bg-white dark:bg-slate-700 rounded-2xl flex items-center justify-center group-hover:rotate-[15deg] transition-transform">
+                        <LogIn className="text-blue-600 group-hover:text-blue-400" size={28} />
+                      </div>
+                      <div className="text-left">
+                        <h4 className="font-black text-lg uppercase tracking-tight group-hover:text-white transition-colors">Sign In</h4>
+                        <p className="text-[10px] font-bold uppercase text-slate-400 group-hover:text-white/60">Access your portal</p>
+                      </div>
                     </div>
-                  </div>
-                  <span className="text-xl opacity-0 group-hover:opacity-100 transition-all">→</span>
-                </button>
-
-                <button onClick={() => {navigate('/register'); setShowJoinModal(false)}} className="w-full flex items-center justify-between p-5 border-2 border-slate-100 dark:border-slate-800 hover:border-blue-600 rounded-2xl transition-all group">
-                  <div className="flex items-center gap-4">
-                    <UserPlus size={24} className="text-slate-400 group-hover:text-blue-600" />
-                    <div className="text-left">
-                      <p className="font-black text-sm uppercase tracking-wider dark:text-white group-hover:text-blue-600">Register</p>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase">Create a new account</p>
+                    <ArrowRight className="text-slate-300 group-hover:text-white transition-all group-hover:translate-x-2" />
+                  </button>
+                  <button onClick={() => {navigate('/register'); setShowJoinModal(false)}} className="group flex items-center justify-between p-6 border-2 border-slate-100 dark:border-slate-800 hover:border-yellow-400 rounded-[2rem] transition-all duration-300">
+                    <div className="flex items-center gap-6">
+                      <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center group-hover:bg-yellow-400 transition-colors">
+                        <UserPlus className="text-slate-600 dark:text-slate-400 group-hover:text-slate-900" size={28} />
+                      </div>
+                      <div className="text-left">
+                        <h4 className="font-black text-lg uppercase tracking-tight dark:text-white group-hover:text-yellow-400 transition-colors">Create Account</h4>
+                        <p className="text-[10px] font-bold uppercase text-slate-400">Join our network</p>
+                      </div>
                     </div>
-                  </div>
-                  <span className="text-xl text-blue-600 opacity-0 group-hover:opacity-100 transition-all">→</span>
-                </button>
+                    <ArrowRight className="text-slate-300 group-hover:text-yellow-400 transition-all group-hover:translate-x-2" />
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-
-      {/* MOBILE SIDEBAR */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsOpen(false)} className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[110]" />
-            <motion.aside initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed top-0 right-0 h-full w-[300px] bg-white dark:bg-slate-900 z-[120] p-10 flex flex-col shadow-2xl">
-               <button onClick={() => setIsOpen(false)} className="self-end dark:text-white"><X size={30}/></button>
-               <div className="mt-10 space-y-8">
-                 <div className="flex flex-col gap-4">
-                   <p className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Navigation</p>
-                   {navLinks.map((link) => (
-                     <Link key={link.id} to={link.path} onClick={() => setIsOpen(false)} className="text-2xl font-black text-slate-900 dark:text-white uppercase italic">{link.title}</Link>
-                   ))}
-                 </div>
-                 
-                 {/* Mobile View Check */}
-                 {!isLoggedIn ? (
-                    <button onClick={() => {setShowJoinModal(true); setIsOpen(false)}} className="w-full py-4 bg-blue-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-lg">Join Now</button>
-                 ) : (
-                    <button onClick={() => {handleLogout(); setIsOpen(false)}} className="w-full py-4 bg-red-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-lg">Logout</button>
-                 )}
-               </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
-    </>
+    </header>
   );
 };
 

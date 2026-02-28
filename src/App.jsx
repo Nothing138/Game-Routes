@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -29,8 +29,10 @@ import AnnouncementMAnager from './pages/Admin/Announcement';
 import ManageRecruiters from './pages/Admin/ManageRecruiters';
 import JobList from './pages/Admin/JobList';
 
+// 🌐 MAIN LAYOUT WITH DARK MODE SUPPORT
 const MainLayout = () => (
-  <div className="flex flex-col min-h-screen">
+  /* Eikhane amra global background ar text color set korechi */
+  <div className="flex flex-col min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-500">
     <Navbar />
     <main className="flex-grow">
       <Outlet /> 
@@ -50,11 +52,7 @@ function App() {
           <Route path="/login" element={<Login />} />
         </Route>
 
-        {/* 🔐 ADMIN LOGIN (Jodi alada login page lage) 
-        <Route path="/admin/login" element={<AdminLogin />} />*/}
-
         {/* 📊 UNIFIED DASHBOARD (Protected) */}
-        {/* Ekhane 'recruiter' add kora holo jate tarao dhukte pare */}
         <Route path="/admin" element={
           <ProtectedRoute allowedRoles={['superadmin', 'admin', 'hr_manager', 'moderator', 'recruiter']}>
             <AdminLayout />
