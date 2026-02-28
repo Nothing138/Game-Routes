@@ -1,10 +1,31 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const { getPendingRecruiters, approveRecruiter } = require('../controllers/adminController');
 
 router.get('/pending-recruiters', getPendingRecruiters); 
-router.put('/approve-recruiter/:id', approveRecruiter);
+router.put('/approve-recruiter/:id', approveRecruiter); 
+
+// --- Image Storage Setup ---
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const dir = 'public/uploads/country/';
+        // Folder na thakle create korbe
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        // Unique filename: country-timestamp.jpg
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ storage: storage });
 
 // --- 1. DASHBOARD SUMMARY ---
 router.get('/dashboard-stats', async (req, res) => {
@@ -78,6 +99,8 @@ router.get('/visa-countries', async (req, res) => {
                 vc.application_charge, 
                 vc.status, 
                 vc.category_id,
+                vc.image_url,   
+                vc.is_top,      
                 cat.category_name 
             FROM visa_countries vc
             LEFT JOIN visa_categories cat ON vc.category_id = cat.id
@@ -91,14 +114,20 @@ router.get('/visa-countries', async (req, res) => {
 });
 
 // ADD COUNTRY LINKED WITH CATEGORY
-router.post('/visa-countries', async (req, res) => {
+router.post('/visa-countries', upload.single('image'), async (req, res) => {
     const { country_name, category_id, application_charge } = req.body;
+    
+    // Check koren req.file asholei asche ki na
+    console.log("File Data:", req.file); 
+
+    const image_url = req.file ? `/uploads/country/${req.file.filename}` : null;
+    
     try {
-        const sql = "INSERT INTO visa_countries (country_name, category_id, application_charge, status) VALUES (?, ?, ?, 'active')";
-        await db.query(sql, [country_name, category_id, application_charge]);
-        res.json({ success: true, message: "Country added successfully!" });
+        const sql = "INSERT INTO visa_countries (country_name, category_id, application_charge, status, image_url, is_top) VALUES (?, ?, ?, 'active', ?, 0)";
+        await db.query(sql, [country_name, category_id, application_charge, image_url]);
+        res.json({ success: true, message: "Added successfully!" });
     } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -126,6 +155,32 @@ router.delete('/visa-countries/:id', async (req, res) => {
         await db.query("DELETE FROM visa_countries WHERE id = ?", [req.params.id]);
         res.json({ success: true, message: "Deleted successfully" });
     } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// TOGGLE TOP STATUS 
+router.put('/visa-countries/toggle-top/:id', async (req, res) => {
+    const { is_top } = req.body; // is_top: 1 or 0
+    try {
+        await db.query("UPDATE visa_countries SET is_top = ? WHERE id = ?", [is_top, req.params.id]);
+        res.json({ success: true, message: is_top ? "Marked as Top Suggestion" : "Removed from Top" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// FETCH TOP SUGGESTIONS 
+router.get('/visa-countries/top', async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT vc.*, cat.category_name 
+            FROM visa_countries vc
+            LEFT JOIN visa_categories cat ON vc.category_id = cat.id
+            WHERE vc.is_top = 1 AND vc.status = 'active'
+        `);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // --- 4. VISA APPLICATIONS ---
