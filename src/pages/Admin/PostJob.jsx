@@ -22,7 +22,7 @@ const PostJob = () => {
         try {
             const url = "http://localhost:5000/api/admin/jobs/post"; 
             const response = await axios.post(url, jobData, {
-                headers: { 'admin-secret-key': 'JM_IT_GLOBAL_SECURE_KEY_2026' }
+                headers: { 'admin-secret-key': 'JM_IT_GLOBAL_SECURE_KEY_2024' }
             });
 
             if (response.data.success) {

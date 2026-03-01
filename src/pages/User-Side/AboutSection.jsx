@@ -81,7 +81,7 @@ const AboutSection = () => {
           {/* 📝 RIGHT: CONTENT & STATS GRID */}
           <div className="w-full lg:w-1/2 text-left">
             <div className="mb-8 md:mb-12">
-              <span className="text-yellow-500 font-black uppercase tracking-[0.2em] text-[10px] md:text-xs">AtoZ Serwis Plus</span>
+              <span className="text-yellow-500 font-black uppercase tracking-[0.2em] text-[10px] md:text-xs">Game Routes</span>
               
               <div className="min-h-[180px] md:min-h-[220px] mt-4 md:mt-6">
                 <AnimatePresence mode="wait">

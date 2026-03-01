@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const bcrypt = require('bcryptjs');
 const { auth, authorize } = require('../middleware/authMiddleware');
 const { login, register } = require('../controllers/authController');
 
@@ -205,8 +206,5 @@ router.delete('/notifications/:id', auth, authorize(['superadmin', 'moderator'])
         res.json({ success: true, message: "Notification purged." });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
-
-//router.post('/login', login); 
-//router.post('/register', register);
 
 module.exports = router;

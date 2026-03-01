@@ -52,4 +52,32 @@ router.put('/update-booking/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// Toggle Top Suggestion Status
+router.put('/package/toggle-top/:id', async (req, res) => {
+    try {
+        // Prothome check korbo bortoman status ki
+        const [rows] = await db.query("SELECT is_top FROM tour_packages WHERE id = ?", [req.params.id]);
+        if (rows.length === 0) return res.status(404).json({ error: "Package not found" });
+
+        const newStatus = rows[0].is_top === 1 ? 0 : 1;
+        
+        await db.query("UPDATE tour_packages SET is_top = ? WHERE id = ?", [newStatus, req.params.id]);
+        
+        res.json({ 
+            message: newStatus === 1 ? "Added to Top Suggestions" : "Removed from Top Suggestions",
+            is_top: newStatus 
+        });
+    } catch (err) { 
+        res.status(500).json({ error: err.message }); 
+    }
+});
+
+// Get only TOP travel packages for the homepage slider
+router.get('/packages/top', async (req, res) => {
+    try {
+        const [rows] = await db.query("SELECT * FROM tour_packages WHERE is_top = 1 ORDER BY id DESC");
+        res.json(rows);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;

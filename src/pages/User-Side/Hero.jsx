@@ -129,11 +129,7 @@ const Hero = () => {
                {/* Stats Overlay */}
                <div className="mt-8 pt-8 border-t border-slate-100 dark:border-white/5 flex justify-between items-center">
                   <div className="flex -space-x-3">
-                    {[1,2,3,4].map(i => (
-                      <div key={i} className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 overflow-hidden">
-                        <img src={`https://i.pravatar.cc/150?u=${i}`} alt="user" />
-                      </div>
-                    ))}
+                    
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-black text-slate-900 dark:text-white leading-none">12.5k+</p>

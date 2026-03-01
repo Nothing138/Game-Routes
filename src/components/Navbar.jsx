@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import Swal from 'sweetalert2';
 import { 
-  Sun, Moon, Globe, Phone, Clock, Search, Menu, X, 
+  Sun, Moon, Globe, Phone, Clock, Menu, X, 
   Home, Briefcase, GraduationCap, PlaneTakeoff, 
-  Handshake, LogIn, UserPlus, ArrowRight, Facebook, Instagram, Twitter, Youtube, ChevronDown
+  Handshake, LogIn, UserPlus, ArrowRight, Facebook, Instagram, Twitter, ChevronDown,
+  User, LogOut, Settings
 } from 'lucide-react';
 import logoImg from '../assets/logo_game_routes.png';
 
@@ -12,6 +14,11 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  
+  // 🔐 Auth State
+  const [user, setUser] = useState(null);
+
   const [isDarkMode, setIsDarkMode] = useState(() => 
     localStorage.getItem('theme') === 'dark' || 
     (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
@@ -19,8 +26,82 @@ const Navbar = () => {
   
   const location = useLocation();
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
-  // 🌗 Dark Mode Logic
+  // 🔄 REAL-TIME AUTH CHECK LOGIC
+  useEffect(() => {
+    const checkUser = () => {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser && storedUser !== "undefined") {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (e) {
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+    };
+
+    checkUser(); // Initial check
+
+    // Listen for custom login event and storage changes
+    window.addEventListener('authChange', checkUser);
+    window.addEventListener('storage', checkUser);
+
+    return () => {
+      window.removeEventListener('authChange', checkUser);
+      window.removeEventListener('storage', checkUser);
+    };
+  }, []);
+
+  // 🚪 Logout Function
+  const handleLogout = () => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You will be logged out of your session!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#2563eb',
+      cancelButtonColor: '#ef4444',
+      confirmButtonText: 'Yes, Logout!',
+      background: isDarkMode ? '#0f172a' : '#fff',
+      color: isDarkMode ? '#fff' : '#000',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        setUser(null);
+        setShowUserDropdown(false);
+        
+        // Notify other components
+        window.dispatchEvent(new Event('authChange'));
+        
+        navigate('/');
+        
+        Swal.fire({
+          title: 'Logged Out!',
+          text: 'Successfully logged out.',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false,
+          background: isDarkMode ? '#0f172a' : '#fff',
+          color: isDarkMode ? '#fff' : '#000',
+        });
+      }
+    });
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowUserDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   useEffect(() => {
     const root = window.document.documentElement;
     if (isDarkMode) {
@@ -32,7 +113,6 @@ const Navbar = () => {
     }
   }, [isDarkMode]);
 
-  // 📜 Scroll Logic
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
@@ -42,27 +122,25 @@ const Navbar = () => {
   const getActiveIcon = (path) => {
     const icons = {
       '/': <Home size={18} />,
-      '/study': <GraduationCap size={18} />,
-      '/work': <Briefcase size={18} />,
-      '/migrate': <PlaneTakeoff size={18} />,
-      '/recruiter': <Handshake size={18} />,
+      '/visa': <PlaneTakeoff size={18} />,
+      '/job': <Briefcase size={18} />,
+      '/travel': <Globe size={18} />,
+      '/aboutus': <Phone size={18} />,
     };
     return icons[path] || <Home size={18} />;
   };
 
   const navItems = [
     { name: 'Home', path: '/' },
-    { name: 'Study', path: '/study' },
-    { name: 'Work', path: '/work' },
-    { name: 'Invest', path: '/invest' },
-    { name: 'Migrate', path: '/migrate' },
-    { name: 'Employer', path: '/employer' },
-    { name: 'Recruiter', path: '/recruiter' },
+    { name: 'Visa', path: '/visa' },
+    { name: 'Job', path: '/job' },
+    { name: 'Travel', path: '/travel' },
+    { name: 'About Us', path: '/aboutus' },
   ];
 
   return (
     <header className="fixed w-full z-[100] font-sans">
-      {/* 💎 1. TOP UTILITY BAR (Desktop Only) */}
+      {/* 1. TOP UTILITY BAR */}
       <div className={`hidden lg:block transition-all duration-500 bg-slate-900 text-white/80 ${scrolled ? 'h-0 opacity-0 overflow-hidden' : 'h-10 opacity-100'}`}>
         <div className="max-w-[1440px] mx-auto px-8 h-full flex justify-between items-center text-[11px] font-medium tracking-widest">
           <div className="flex items-center gap-6">
@@ -88,7 +166,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* 🚀 2. MAIN NAVIGATION */}
+      {/* 2. MAIN NAVIGATION */}
       <nav className={`transition-all duration-500 border-b ${
         scrolled 
         ? 'bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl py-3 shadow-lg border-transparent' 
@@ -96,11 +174,8 @@ const Navbar = () => {
       }`}>
         <div className="max-w-[1440px] mx-auto px-6 lg:px-8 flex justify-between items-center">
           
-          {/* LOGO */}
           <Link to="/" className="flex items-center gap-4 group">
-            <div className="relative">
-                <img src={logoImg} alt="Logo" className="h-10 lg:h-12 w-auto transition-transform duration-700 group-hover:scale-110" />
-            </div>
+            <img src={logoImg} alt="Logo" className="h-10 lg:h-12 w-auto transition-transform duration-700 group-hover:scale-110" />
             <div className="hidden sm:flex flex-col">
               <span className="text-xl lg:text-2xl font-black tracking-tighter text-slate-900 dark:text-white uppercase leading-none">
                 GAME<span className="text-blue-600">ROUTES</span>
@@ -109,7 +184,7 @@ const Navbar = () => {
             </div>
           </Link>
 
-          {/* 💻 DESKTOP MENU */}
+          {/* DESKTOP MENU */}
           <div className="hidden lg:flex items-center gap-2">
             <ul className="flex items-center bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
               {navItems.map((item) => {
@@ -134,16 +209,58 @@ const Navbar = () => {
                <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-yellow-400 border border-slate-200 dark:border-slate-700 transition-all">
                 {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
-              <button 
-                onClick={() => setShowJoinModal(true)} 
-                className="px-8 py-3 bg-slate-900 dark:bg-blue-600 text-white text-[12px] font-black uppercase tracking-[0.2em] rounded-xl hover:shadow-xl transition-all active:scale-95"
-              >
-                Join Us
-              </button>
+
+              {/* 👤 CONDITIONAL RENDER: USER ICON OR JOIN US */}
+              {user ? (
+                <div className="relative" ref={dropdownRef}>
+                   <button 
+                    onClick={() => setShowUserDropdown(!showUserDropdown)}
+                    className="flex items-center gap-3 p-1.5 pr-4 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all"
+                   >
+                     <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
+                        {user.name ? user.name.charAt(0).toUpperCase() : <User size={18}/>}
+                     </div>
+                     <div className="text-left">
+                        <p className="text-[10px] font-black uppercase dark:text-white leading-tight truncate max-w-[80px]">{user.name || 'User'}</p>
+                        <p className="text-[8px] font-bold text-blue-600 uppercase tracking-widest">Active</p>
+                     </div>
+                     <ChevronDown size={14} className={`dark:text-white transition-transform ${showUserDropdown ? 'rotate-180' : ''}`} />
+                   </button>
+
+                   <AnimatePresence>
+                    {showUserDropdown && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                        className="absolute right-0 mt-3 w-56 bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800 p-3 z-[110]"
+                      >
+                        <div className="p-4 border-b border-slate-50 dark:border-slate-800 mb-2">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Account Details</p>
+                            <p className="text-xs font-black dark:text-white truncate">{user.email}</p>
+                        </div>
+                        <button onClick={() => {navigate('/profile'); setShowUserDropdown(false)}} className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group">
+                          <User size={16} className="text-slate-400 group-hover:text-blue-600" />
+                          <span className="text-xs font-bold uppercase tracking-wider dark:text-white">Profile</span>
+                        </button>
+                        <button onClick={handleLogout} className="w-full flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl transition-all group mt-2">
+                          <LogOut size={16} className="text-red-500" />
+                          <span className="text-xs font-black uppercase tracking-wider text-red-600">Logout</span>
+                        </button>
+                      </motion.div>
+                    )}
+                   </AnimatePresence>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => setShowJoinModal(true)} 
+                  className="px-8 py-3 bg-slate-900 dark:bg-blue-600 text-white text-[12px] font-black uppercase tracking-[0.2em] rounded-xl hover:shadow-xl transition-all active:scale-95"
+                >
+                  Join Us
+                </button>
+              )}
             </div>
           </div>
 
-          {/* 📱 MOBILE TOGGLE */}
+          {/* MOBILE TOGGLE */}
           <div className="lg:hidden flex items-center gap-3">
             <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2.5 text-slate-600 dark:text-yellow-400">
                 {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -155,7 +272,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* 📱 3. MOBILE FULL-SCREEN MENU */}
+      {/* MOBILE FULL-SCREEN MENU */}
       <AnimatePresence>
         {isOpen && (
           <>
@@ -178,15 +295,31 @@ const Navbar = () => {
                   </motion.div>
                 ))}
               </div>
-              <div className="mt-auto pt-10 border-t border-slate-100 dark:border-slate-800">
-                 <button onClick={() => {setShowJoinModal(true); setIsOpen(false)}} className="w-full py-5 bg-blue-600 text-white font-black uppercase tracking-widest rounded-2xl text-xl shadow-lg">Get Started</button>
+              
+              <div className="mt-auto pt-10 border-t border-slate-100 dark:border-slate-800 space-y-4">
+                 {user ? (
+                   <div className="space-y-4">
+                      <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl">
+                        <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xl font-bold">
+                          {user.name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-black dark:text-white uppercase italic">{user.name}</p>
+                          <p className="text-[10px] text-slate-500 uppercase font-bold">{user.email}</p>
+                        </div>
+                      </div>
+                      <button onClick={handleLogout} className="w-full py-5 bg-red-600 text-white font-black uppercase tracking-widest rounded-2xl text-xl shadow-lg">Logout</button>
+                   </div>
+                 ) : (
+                   <button onClick={() => {setShowJoinModal(true); setIsOpen(false)}} className="w-full py-5 bg-blue-600 text-white font-black uppercase tracking-widest rounded-2xl text-xl shadow-lg">Get Started</button>
+                 )}
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
-      {/* 🎭 4. PREMIUM JOIN US MODAL */}
+      {/* JOIN US MODAL */}
       <AnimatePresence>
         {showJoinModal && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">

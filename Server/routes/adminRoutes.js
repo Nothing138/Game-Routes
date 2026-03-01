@@ -4,6 +4,7 @@ const db = require('../config/db');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const bcrypt = require('bcryptjs');
 const { getPendingRecruiters, approveRecruiter } = require('../controllers/adminController');
 
 router.get('/pending-recruiters', getPendingRecruiters); 
@@ -228,7 +229,7 @@ router.post('/blogs', async (req, res) => {
 
     try {
         await db.query(
-            "INSERT INTO blogs (author_id, title, slug, content, featured_image, status) VALUES (?, ?, ?, ?, ?, 'published')",
+            "INSERT INTO blogs (author_id, title, slug, content, featured_image) VALUES (?, ?, ?, ?, ?, 'published')",
             [author_id || 1, title, slug, content, featured_image]
         );
         res.json({ success: true, message: "Blog posted successfully!" });
@@ -238,12 +239,22 @@ router.post('/blogs', async (req, res) => {
 });
 
 // Get All Blogs
-router.get('/blogs', async (req, res) => {
+/*router.get('/blogs', async (req, res) => {
     try {
         const [rows] = await db.query("SELECT * FROM blogs ORDER BY id DESC");
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});*/
+
+router.get('/blogs', async (req, res) => {
+    try {
+        // SQL query order by latest first
+        const [rows] = await db.query("SELECT * FROM blogs ORDER BY created_at DESC");
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
@@ -270,6 +281,22 @@ router.delete('/blogs/:id', async (req, res) => {
         res.json({ success: true, message: "Blog deleted!" });
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// Get Single Blog by Slug
+router.get('/blogs/:slug', async (req, res) => {
+    const { slug } = req.params;
+    try {
+        const [rows] = await db.query("SELECT * FROM blogs WHERE slug = ?", [slug]);
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: "Blog not found" });
+        }
+        
+        res.json(rows[0]); // Shudhu single blog-ta pathabo
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
@@ -585,5 +612,49 @@ exports.approveRecruiter = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };*/
+
+//forgot password
+// 1. Password check korar logic (MySQL Version)
+router.post('/check-user', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const [rows] = await db.query("SELECT id FROM users WHERE email = ?", [email]);
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ exists: false, message: "User not found" });
+        }
+        
+        res.status(200).json({ exists: true });
+    } catch (err) {
+        console.error("Check User Error:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// 2. Password update korar logic (MySQL Version)
+router.put('/reset-password-direct', async (req, res) => {
+    const { email, newPassword } = req.body;
+    try {
+        // Step 1: Password hash kora (Security-r jonno)
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        
+        // Step 2: MySQL Query chalanu
+        const [result] = await db.query(
+            "UPDATE users SET password = ? WHERE email = ?", 
+            [hashedPassword, email]
+        );
+
+        // affectedRows mane holo database-e password change hoyeche kina
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "User not found or no changes made" });
+        }
+
+        res.status(200).json({ message: "Password updated successfully" });
+    } catch (err) {
+        console.error("Update Error Details:", err); // Eita backend console-e error dekhabe
+        res.status(500).json({ message: "Failed to update password", error: err.message });
+    }
+});
 
 module.exports = router;

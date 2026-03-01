@@ -29,6 +29,10 @@ import AnnouncementMAnager from './pages/Admin/Announcement';
 import ManageRecruiters from './pages/Admin/ManageRecruiters';
 import JobList from './pages/Admin/JobList';
 
+//User-Side
+import BlogDetail from './pages/User-Side/BlogDetail';
+import ForgotPassword from './pages/User-Side/ForgotPassword';
+
 // 🌐 MAIN LAYOUT WITH DARK MODE SUPPORT
 const MainLayout = () => (
   /* Eikhane amra global background ar text color set korechi */
@@ -76,7 +80,11 @@ function App() {
           <Route path="manage-recruiters" element={<ManageRecruiters />} />
           <Route path="job-list" element={<JobList />} />
           <Route path="notifications" element={<InboX />} />
+
         </Route>
+
+        <Route path="/blogs/:slug" element={<BlogDetail />} />
+        <Route path="forgot-password" element={<ForgotPassword />} />
 
         {/* 🚀 404 PAGE */}
         <Route path="*" element={<NotFound />} />

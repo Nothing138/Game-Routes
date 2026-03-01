@@ -14,7 +14,15 @@ const UploadBlog = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/api/admin/blogs', formData);
+            // Oboshoy check korben URL-ta thik ache kina (Backend prefix onujayi)
+            //const url = 'http://localhost:5000/api/blogs'; 
+            
+            const res = await axios.post('http://localhost:5000/api/blogs', formData, {
+                headers: { 
+                    'admin-secret-key': 'JM_IT_GLOBAL_SECURE_KEY_2024' 
+                }
+            });
+
             if(res.data.success) {
                 Swal.fire({
                     title: '<span class="font-black italic uppercase">Story Deployed!</span>',
@@ -28,7 +36,8 @@ const UploadBlog = () => {
                 setFormData({ title: '', content: '', featured_image: '', author_id: 1 });
             }
         } catch (err) {
-            Swal.fire('Error', 'Failed to publish blog', 'error');
+            console.error("Upload Error:", err.response?.data || err.message);
+            Swal.fire('Error', err.response?.data?.message || 'Failed to publish blog', 'error');
         }
     };
 
