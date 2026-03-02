@@ -33,8 +33,9 @@ const Login = () => {
             localStorage.setItem('role', res.data.role);
             
             const userData = {
-                name: res.data.name || email.split('@')[0],
-                email: email,
+                id: res.data.id,
+                name: res.data.user.name || email.split('@')[0],
+                email: email,   
                 role: res.data.role
             };
             localStorage.setItem('user', JSON.stringify(userData));

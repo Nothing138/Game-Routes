@@ -36,6 +36,8 @@ const announcementRoutes = require('./routes/announcementRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const registrationRoutes = require('./routes/userregistrationroute');
 const testimonialRoutes = require('./routes/testimonialRoutes');
+const visaRoutes = require('./routes/visaRoutes');
+const userRoute = require('./routes/userRoute');
 
 // ✅ Routes Registration
 app.use('/api/auth', authRoutes);
@@ -50,6 +52,8 @@ app.use('/api/announcements', announcementRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/verify', registrationRoutes);
 app.use('/api', testimonialRoutes);
+app.use('/api/visas', visaRoutes);
+app.use('/api/users', userRoute);
 //app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // Static Folder for Images

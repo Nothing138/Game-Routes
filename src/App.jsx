@@ -33,6 +33,12 @@ import UploadTestimony from './pages/Admin/UploadTestimony';
 //User-Side
 import BlogDetail from './pages/User-Side/BlogDetail';
 import ForgotPassword from './pages/User-Side/ForgotPassword';
+import Visa from './pages/User-Side/Visa';
+import Job from './pages/User-Side/Job';
+import Travel from './pages/User-Side/Travel';
+import AboutUs from './pages/User-Side/About';
+import ApplyVisa from './pages/User-Side/ApplyVisa';
+import UserProfile from './pages/User-Side/UserProfile';
 
 // 🌐 MAIN LAYOUT WITH DARK MODE SUPPORT
 const MainLayout = () => (
@@ -84,8 +90,17 @@ function App() {
           <Route path="testimonials" element={<UploadTestimony />} />
         </Route>
 
-        <Route path="/blogs/:slug" element={<BlogDetail />} />
-        <Route path="forgot-password" element={<ForgotPassword />} />
+        
+          <Route path="/blogs/:slug" element={<BlogDetail />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="visa" element={<Visa />} />
+          <Route path="job" element={<Job />} />
+          <Route path="travel" element={<Travel />} />
+          <Route path="aboutus" element={<AboutUs />} />
+          <Route path="/apply-visa/:visaId" element={<ApplyVisa />} />
+          <Route path="profile" element={<UserProfile />} />
+          
+        
 
         {/* 🚀 404 PAGE */}
         <Route path="*" element={<NotFound />} />
