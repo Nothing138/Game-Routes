@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Globe, Briefcase, MapPin, 
   FileText, Users, UserPlus, Menu, X, Bell, LogOut, ChevronDown, 
   PlusCircle, List, Send, CheckCircle, Package, Bookmark,
-  BarChart3, MessageSquare, Mail, Sun, Moon 
+  BarChart3, MessageSquare, Mail, Sun, Moon, Quote 
 } from 'lucide-react';
 
 import Footer from '../../components/Admin&Recruiter/Footer';
@@ -45,19 +45,6 @@ const AdminLayout = () => {
   const isModerator  = userRole === 'moderator' || isHR || isAdmin || isSuperAdmin;
   const isRecruiter  = userRole === 'recruiter' || isHR || isAdmin || isSuperAdmin;
 
-  /*const fetchUnreadCount = async () => {
-    try {
-      const res = await axios.get('http://localhost:5000/api/admin/notifications/unread-count');
-      setUnreadCount(res.data.count || 0);
-    } catch (err) { console.error("Bell sync failed"); }
-  };
-
-  useEffect(() => {
-    fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(interval);
-  }, []);*/
-
   const toggleMenu = (menuName) => {
     setOpenMenus(prev => ({ ...prev, [menuName]: !prev[menuName] }));
   };
@@ -85,35 +72,20 @@ const AdminLayout = () => {
       <aside className={`${isSidebarOpen ? 'w-72' : 'w-20'} bg-[#1E293B] text-gray-300 transition-all duration-300 flex flex-col shadow-2xl z-50`}>
         <div className="h-20 flex items-center justify-center px-4 bg-red-700 border-b border-gray-800 italic font-black text-white uppercase tracking-tighter shadow-lg shrink-0 overflow-hidden">
           {isSidebarOpen ? (
-            /* --- Sidebar Open: Logo + Text in one line --- */
             <div className="flex items-center gap-2 animate-in fade-in duration-500">
-              <img 
-                src={logo} 
-                alt="Logo" 
-                className="w-12 h-12 object-contain" 
-              />
-              <span className="text-lg whitespace-nowrap">
-                Game Routes
-              </span>
+              <img src={logo} alt="Logo" className="w-12 h-12 object-contain" />
+              <span className="text-lg whitespace-nowrap">Game Routes</span>
             </div>
           ) : (
-            /* --- Sidebar Closed: Only Logo --- */
-            <img 
-              src={logo}
-              alt="Logo"
-              className="w-20 h-20 object-contain transition-all duration-300 hover:scale-110"
-            />
+            <img src={logo} alt="Logo" className="w-20 h-20 object-contain transition-all duration-300 hover:scale-110" />
           )}
         </div>
 
         <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-2 custom-scrollbar">
-          {/* Dashboard - Visible to All Staff */}
           <SidebarItem to="/admin/dashboard" icon={<LayoutDashboard size={20}/>} label="Dashboard" isOpen={isSidebarOpen} currentPath={location.pathname} />
           
-          {/* Analytics - Super Admin Only */}
           {isSuperAdmin && <SidebarItem to="/admin/analytics" icon={<BarChart3 size={20}/>} label="Analytics" isOpen={isSidebarOpen} currentPath={location.pathname} />}
           
-          {/* Visa Application - HR & Admin */}
           {isHR && (
             <SidebarDropdown 
               label="Visa Application" icon={<Globe size={20}/>} isOpen={isSidebarOpen} isMenuOpen={openMenus.visa} onClick={() => toggleMenu('visa')}
@@ -125,7 +97,6 @@ const AdminLayout = () => {
             />
           )}
 
-          {/* Job Circular - Recruiter, HR, Admin */}
           {isRecruiter && (
             <SidebarDropdown 
               label="Job Circular" icon={<Briefcase size={20}/>} isOpen={isSidebarOpen} isMenuOpen={openMenus.job} onClick={() => toggleMenu('job')}
@@ -133,12 +104,10 @@ const AdminLayout = () => {
                 { label: 'Post Job', to: '/admin/post-job', icon: <Send size={14}/> },
                 { label: 'Job List', to: '/admin/job-list', icon: <List size={14}/> },
                 { label: 'Applied Candidates', to: '/admin/candidates', icon: <Users size={14}/> },
-                {/* label: 'Recruiter List', to: '/admin/manage-recruiters', icon: <List size={14}/> */},
               ]}
             />
           )}
 
-          {/* Travel & Tour - HR & Admin */}
           {isHR && (
             <SidebarDropdown 
               label="Travel & Tour" icon={<MapPin size={20}/>} isOpen={isSidebarOpen} isMenuOpen={openMenus.travel} onClick={() => toggleMenu('travel')}
@@ -149,18 +118,18 @@ const AdminLayout = () => {
             />
           )}
 
-          {/* Communications - All Staff (Recruiter, Moderator, HR, Admin) */}
+          {/* --- Communications Section (Updated) --- */}
           {isRecruiter && (
             <SidebarDropdown 
               label="Communications" icon={<MessageSquare size={20}/>} isOpen={isSidebarOpen} isMenuOpen={openMenus.chat} onClick={() => toggleMenu('chat')}
               items={[
-                { label: 'Inbox ', to: '/admin/notifications', icon: <Mail size={14}/> },
+                { label: 'Inbox', to: '/admin/notifications', icon: <Mail size={14}/> },
+                { label: 'Upload Testimony', to: '/admin/testimonials', icon: <Quote size={14}/> }, // Notun Item Add kora hoyeche
                 { label: 'ANNOUNCEMENT', to: '/admin/push-alerts', icon: <Bell size={14}/> },
               ]}
             />
           )}
 
-          {/* Agency Blog - Moderator, HR, Admin */}
           {isModerator && (
             <SidebarDropdown 
               label="Agency Blog" icon={<FileText size={20}/>} isOpen={isSidebarOpen} isMenuOpen={openMenus.blog} onClick={() => toggleMenu('blog')}
@@ -171,7 +140,6 @@ const AdminLayout = () => {
             />
           )}
 
-          {/* Staff Management - Moderator, HR, Admin, Superadmin */}
           {isModerator && (
             <SidebarItem to="/admin/staff-management" icon={<UserPlus size={20}/>} label="Staff Management" isOpen={isSidebarOpen} currentPath={location.pathname} />
           )}

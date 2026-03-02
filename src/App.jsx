@@ -28,6 +28,7 @@ import InboX from './pages/Admin/Inbox';
 import AnnouncementMAnager from './pages/Admin/Announcement';
 import ManageRecruiters from './pages/Admin/ManageRecruiters';
 import JobList from './pages/Admin/JobList';
+import UploadTestimony from './pages/Admin/UploadTestimony';
 
 //User-Side
 import BlogDetail from './pages/User-Side/BlogDetail';
@@ -80,7 +81,7 @@ function App() {
           <Route path="manage-recruiters" element={<ManageRecruiters />} />
           <Route path="job-list" element={<JobList />} />
           <Route path="notifications" element={<InboX />} />
-
+          <Route path="testimonials" element={<UploadTestimony />} />
         </Route>
 
         <Route path="/blogs/:slug" element={<BlogDetail />} />

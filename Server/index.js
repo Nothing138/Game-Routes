@@ -50,7 +50,7 @@ app.use('/api/announcements', announcementRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/verify', registrationRoutes);
 app.use('/api', testimonialRoutes);
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+//app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // Static Folder for Images
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
