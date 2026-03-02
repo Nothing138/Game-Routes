@@ -15,6 +15,8 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [showLangDropdown, setShowLangDropdown] = useState(false); 
+  const [currentLang, setCurrentLang] = useState({ name: 'English', flag: '🇺🇸' });
   
   // 🔐 Auth State
   const [user, setUser] = useState(null);
@@ -27,6 +29,51 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
+  const langRef = useRef(null);
+
+  // 🌐 LANGUAGES LIST
+  const languages = [
+    { code: 'en', name: 'English', flag: '🇺🇸' },
+    { code: 'bn', name: 'বাংলা', flag: '🇧🇩' },
+    { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+    { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+    { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+    { code: 'zh-CN', name: '中文', flag: '🇨🇳' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+    { code: 'ms', name: 'Melayu', flag: '🇲🇾' },
+    { code: 'ur', name: 'اردو', flag: '🇵🇰' },
+    { code: 'ne', name: 'नेपाली', flag: '🇳🇵' },
+    { code: 'af', name: 'Afrikaans', flag: '🇿🇦' }
+  ];
+
+  // 🔄 Language Switch Logic
+  const handleTranslate = (lang) => {
+    const selectEl = document.querySelector('.goog-te-combo');
+    if (selectEl) {
+      selectEl.value = lang.code;
+      selectEl.dispatchEvent(new Event('change'));
+      setCurrentLang({ name: lang.name, flag: lang.flag });
+      setShowLangDropdown(false);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: `Switching to ${lang.name}`,
+        showConfirmButton: false,
+        timer: 1000
+      });
+    } else {
+      console.error("Google Translate script not loaded yet.");
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'info',
+        title: 'Translation engine is loading...',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    }
+  };
 
   // 🔄 REAL-TIME AUTH CHECK LOGIC
   useEffect(() => {
@@ -97,6 +144,9 @@ const Navbar = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowUserDropdown(false);
       }
+      if (langRef.current && !langRef.current.contains(event.target)) {
+        setShowLangDropdown(false);
+      } 
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -157,10 +207,36 @@ const Navbar = () => {
             <a href="tel:+48222085497" className="hover:text-white transition-colors flex items-center gap-2">
               <Phone size={12} className="text-yellow-400" /> +48 22 208 5497
             </a>
-            <div className="flex items-center gap-2 cursor-pointer group">
-              <Globe size={12} className="text-yellow-400 group-hover:rotate-180 transition-transform duration-700" />
-              <span className="group-hover:text-white">English</span>
-              <ChevronDown size={10} />
+            {/* 🌐 GLOBAL LANGUAGE SWITCHER IN UTILITY BAR */}
+            <div className="relative" ref={langRef}>
+              <div 
+                onClick={() => setShowLangDropdown(!showLangDropdown)}
+                className="flex items-center gap-2 cursor-pointer group hover:text-white transition-all py-1"
+              >
+                <Globe size={12} className="text-yellow-400 group-hover:rotate-180 transition-transform duration-700" />
+                <span className="font-bold tracking-widest">{currentLang.flag} {currentLang.name}</span>
+                <ChevronDown size={10} className={`transition-transform ${showLangDropdown ? 'rotate-180' : ''}`} />
+              </div>
+
+              <AnimatePresence>
+                {showLangDropdown && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                    className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 p-2 z-[110] grid grid-cols-2 gap-1"
+                  >
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => handleTranslate(lang)}
+                        className="flex items-center gap-2 px-3 py-2 text-[9px] font-black text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all uppercase"
+                      >
+                        <span>{lang.flag}</span>
+                        <span className="truncate">{lang.name}</span>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>

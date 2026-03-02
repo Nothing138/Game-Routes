@@ -40,3 +40,55 @@
 .read-the-docs {
   color: #888;
 }
+
+/* --- Global Translation Fixes --- */
+.goog-te-banner-frame.skiptranslate,
+  .goog-te-banner-frame {
+    display: none !important;
+    visibility: hidden !important;
+  }
+body {
+    top: 0px !important;
+    position: static !important;
+  }
+.goog-te-menu-value span:nth-child(5) {
+    display: none !important;
+}
+.goog-te-gadget {
+    color: transparent !important;
+}
+#goog-gt-tt, .goog-te-balloon-frame {
+    display: none !important;
+}
+.goog-text-highlight {
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+#goog-gt-tt, 
+  .goog-te-balloon-frame,
+  #goog-gt-m,
+  #goog-gt-s {
+    display: none !important;
+    visibility: hidden !important;
+  }
+/* Translation Switcher styles */
+#google_translate_element {
+    display: none;
+}
+.goog-te-combo {
+  position: absolute;
+  visibility: hidden;
+  z-index: -1;
+}
+
+/* Flag emoji size fix */
+.language-flag {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  font-size: 1.2rem;
+}
+
+/* Dropdown shadow and glass effect */
+.lang-dropdown-shadow {
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.2);
+  backdrop-filter: blur(10px);
+}

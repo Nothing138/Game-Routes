@@ -47,4 +47,45 @@ router.get('/testimonials', async (req, res) => {
     }
 });
 
+// 🗑️ DELETE: Testimonial remove kora
+router.delete('/testimonials/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Age image-er path ta niye ashi jate file-o delete kora jay
+        const [rows] = await db.query("SELECT image_url FROM testimonials WHERE id = ?", [id]);
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "Testimony not found!" });
+        }
+
+        // Database theke delete
+        await db.query("DELETE FROM testimonials WHERE id = ?", [id]);
+
+        // Server-er public folder theke image delete (Optional but good practice)
+        const imagePath = path.join(__dirname, '../public', rows[0].image_url);
+        if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+        }
+
+        res.json({ success: true, message: "Testimony deleted successfully!" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 🔄 UPDATE: Testimony update kora (Status change ba data edit)
+router.put('/testimonials/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name, designation, description, status } = req.body;
+
+    try {
+        const sql = "UPDATE testimonials SET name=?, designation=?, description=?, status=? WHERE id=?";
+        await db.query(sql, [name, designation, description, status || 'active', id]);
+        res.json({ success: true, message: "Testimony updated!" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;
