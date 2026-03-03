@@ -39,6 +39,8 @@ const testimonialRoutes = require('./routes/testimonialRoutes');
 const visaRoutes = require('./routes/visaRoutes');
 const userRoute = require('./routes/userRoute');
 const userJobRoutes = require('./routes/userJobRoutes');
+const travelRoutes = require('./routes/userTravelRoutes');
+const flightRoutes = require('./routes/flightRoutes');
 
 // ✅ Routes Registration
 app.use('/api/auth', authRoutes);
@@ -56,6 +58,8 @@ app.use('/api', testimonialRoutes);
 app.use('/api/visas', visaRoutes);
 app.use('/api/users', userRoute);
 app.use('/api/user-jobs', userJobRoutes);
+app.use('/api/user-travel', travelRoutes);
+app.use('/api', flightRoutes);
 //app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // Static Folder for Images

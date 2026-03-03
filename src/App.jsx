@@ -39,7 +39,9 @@ import Travel from './pages/User-Side/Travel';
 import AboutUs from './pages/User-Side/About';
 import ApplyVisa from './pages/User-Side/ApplyVisa';
 import ApplyJob from './pages/User-Side/ApplyJob';
+import ApplyTours from './pages/User-Side/ApplyTours';
 import UserProfile from './pages/User-Side/UserProfile';
+import Flight from './pages/User-Side/Flight';
 
 // 🌐 MAIN LAYOUT WITH DARK MODE SUPPORT
 const MainLayout = () => (
@@ -100,7 +102,9 @@ function App() {
           <Route path="aboutus" element={<AboutUs />} />
           <Route path="/apply-visa/:visaId" element={<ApplyVisa />} />
           <Route path="/apply-job/:jobId" element={<ApplyJob />} />
+          <Route path="/apply-tours/:pkgId" element={<ApplyTours />} />
           <Route path="profile" element={<UserProfile />} />
+           <Route path="flight" element={<Flight />} />
 
         {/* 🚀 404 PAGE */}
         <Route path="*" element={<NotFound />} />
