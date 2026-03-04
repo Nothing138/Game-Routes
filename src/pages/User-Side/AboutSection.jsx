@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Headphones, Star, Building2, ArrowRight, Quote } from 'lucide-react';
+import { Users, Headphones, Star, Building2, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // ১. নেভিগেশনের জন্য ইমপোর্ট
 
 const AboutSection = () => {
+  const navigate = useNavigate(); // ২. নেভিগেট হুক ইনিশিয়ালাইজেশন
   const [index, setIndex] = useState(0);
   const [activeStat, setActiveStat] = useState(0);
 
@@ -38,7 +40,7 @@ const AboutSection = () => {
 
     const statInterval = setInterval(() => {
       setActiveStat((prev) => (prev + 1) % stats.length);
-    }, 1500); // Prottek 1.5 second-e highlight change hobe
+    }, 1500);
 
     return () => {
       clearInterval(mainInterval);
@@ -51,7 +53,7 @@ const AboutSection = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
           
-          {/* 🖼️ LEFT: IMAGE SECTION (Responsive Height) */}
+          {/* 🖼️ LEFT: IMAGE SECTION */}
           <div className="relative w-full lg:w-1/2 h-[400px] md:h-[600px]">
             <AnimatePresence mode="wait">
               <motion.div 
@@ -67,7 +69,6 @@ const AboutSection = () => {
               </motion.div>
             </AnimatePresence>
 
-            {/* Floating Experience Badge (Smaller on Mobile) */}
             <motion.div 
               animate={{ y: [0, -10, 0] }}
               transition={{ repeat: Infinity, duration: 4 }}
@@ -102,15 +103,17 @@ const AboutSection = () => {
                 </AnimatePresence>
               </div>
 
+              {/* ৩. বাটন ক্লিক লজিক আপডেট করা হয়েছে */}
               <motion.button 
                 whileTap={{ scale: 0.95 }}
-                className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-slate-900 dark:bg-yellow-500 text-white dark:text-black font-black uppercase tracking-widest rounded-xl md:rounded-2xl transition-all"
+                onClick={() => navigate('/aboutus')} // /aboutus পেজে পাঠিয়ে দিবে
+                className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-slate-900 dark:bg-yellow-500 text-white dark:text-black font-black uppercase tracking-widest rounded-xl md:rounded-2xl transition-all hover:opacity-90 active:scale-95"
               >
                 Learn More <ArrowRight size={20} />
               </motion.button>
             </div>
 
-            {/* 📊 STATS BENTO GRID (Responsive 2-column) */}
+            {/* 📊 STATS BENTO GRID */}
             <div className="grid grid-cols-2 gap-4 md:gap-6">
               {stats.map((stat, i) => {
                 const isActive = activeStat === i;
@@ -124,7 +127,6 @@ const AboutSection = () => {
                     }}
                     className={`p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border-2 bg-white dark:bg-white/5 transition-all relative overflow-hidden`}
                   >
-                    {/* Background Light Flash Effect */}
                     {isActive && (
                       <motion.div 
                         initial={{ x: '-100%' }}

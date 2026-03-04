@@ -227,7 +227,6 @@ const Apply = () => {
           </motion.div>
         </div>
       </div>
-      <Footer />
     </>
   );
 };

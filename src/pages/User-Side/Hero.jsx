@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom'; // ১. নেভিগেশনের জন্য ইমপোর্ট
 import { 
   ArrowUpRight, Globe2, Sparkles, Phone, Mail, 
   MessageSquare, ChevronRight, Play, Users, Briefcase, GraduationCap 
 } from 'lucide-react';
 
 const Hero = () => {
+  const navigate = useNavigate(); // ২. নেভিগেট হুক
   const [showSupport, setShowSupport] = useState(false);
-  const [activeService, setActiveService] = useState(0); // For Highlight Loop
+  const [activeService, setActiveService] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // ৩. লগইন স্টেট
 
-  // 📝 Service Data
+  // ৪. লগইন চেক করার লজিক
+  useEffect(() => {
+    const user = localStorage.getItem('user'); // আপনার লগইন সিস্টেম অনুযায়ী কি (key) পরিবর্তন হতে পারে
+    if (user) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
   const services = [
     { label: 'Study', icon: <GraduationCap size={28} />, bg: 'bg-yellow-400', text: 'text-black' },
     { label: 'Work', icon: <Briefcase size={28} />, bg: 'bg-slate-900', text: 'text-white' },
@@ -17,11 +27,10 @@ const Hero = () => {
     { label: 'Migrate', icon: <Sparkles size={28} />, bg: 'bg-blue-600', text: 'text-white' }
   ];
 
-  // 🔄 Highlight Loop Logic
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveService((prev) => (prev + 1) % services.length);
-    }, 2000); // 2 second por por highlight change hobe
+    }, 2000);
     return () => clearInterval(interval);
   }, []);
 
@@ -34,7 +43,6 @@ const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#fafafa] dark:bg-[#050505] pt-24 pb-12">
       
-      {/* 🎨 Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
         <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-yellow-400/10 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[120px]" />
@@ -43,7 +51,6 @@ const Hero = () => {
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           
-          {/* 📝 LEFT CONTENT */}
           <motion.div 
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -69,23 +76,40 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-wrap items-center gap-5">
-              <motion.button 
-                whileHover={{ scale: 1.05 }}
-                className="px-10 py-5 bg-slate-900 dark:bg-yellow-500 text-white dark:text-black font-black uppercase tracking-widest rounded-2xl flex items-center gap-3 shadow-2xl transition-all"
-              >
-                Get Started <ArrowUpRight size={20} />
-              </motion.button>
+              {/* ৫. কন্ডিশনাল বাটন রেন্ডারিং */}
+              {!isLoggedIn ? (
+                <>
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    onClick={() => navigate('/register')} // রেজিস্ট্রেশন পেজে পাঠাবে
+                    className="px-10 py-5 bg-slate-900 dark:bg-yellow-500 text-white dark:text-black font-black uppercase tracking-widest rounded-2xl flex items-center gap-3 shadow-2xl transition-all"
+                  >
+                    Get Started <ArrowUpRight size={20} />
+                  </motion.button>
 
-              <button className="flex items-center gap-4 group">
-                <div className="w-14 h-14 rounded-full border border-slate-200 dark:border-slate-800 flex items-center justify-center group-hover:bg-yellow-400 transition-all">
-                  <Play size={20} className="fill-current group-hover:text-black" />
-                </div>
-                <span className="font-bold uppercase tracking-widest text-xs">Our Story</span>
-              </button>
+                  <button className="flex items-center gap-4 group">
+                    <div className="w-14 h-14 rounded-full border border-slate-200 dark:border-slate-800 flex items-center justify-center group-hover:bg-yellow-400 transition-all">
+                      <Play size={20} className="fill-current group-hover:text-black" />
+                    </div>
+                    <span className="font-bold uppercase tracking-widest text-xs">Our Story</span>
+                  </button>
+                </>
+              ) : (
+                // লগইন থাকলে শুধু Our Story দেখাবে
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  className="px-10 py-5 bg-slate-900 dark:bg-yellow-500 text-white dark:text-black font-black uppercase tracking-widest rounded-2xl flex items-center gap-4 shadow-2xl transition-all group"
+                >
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                    <Play size={14} className="fill-current" />
+                  </div>
+                  Our Story
+                </motion.button>
+              )}
             </div>
           </motion.div>
 
-          {/* 🖼️ RIGHT CONTENT (Animated Bento Box) */}
+          {/* RIGHT CONTENT - No changes needed here */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -108,7 +132,6 @@ const Hero = () => {
                         transition={{ type: 'spring', stiffness: 300 }}
                         className={`${service.bg} ${service.text} p-6 rounded-[2rem] cursor-pointer relative overflow-hidden group`}
                       >
-                        {/* ⚡ Glow Effect for Active Card */}
                         {isActive && (
                           <motion.div 
                             layoutId="highlight"
@@ -126,11 +149,8 @@ const Hero = () => {
                   })}
                </div>
 
-               {/* Stats Overlay */}
                <div className="mt-8 pt-8 border-t border-slate-100 dark:border-white/5 flex justify-between items-center">
-                  <div className="flex -space-x-3">
-                    
-                  </div>
+                  <div className="flex -space-x-3"></div>
                   <div className="text-right">
                     <p className="text-xl font-black text-slate-900 dark:text-white leading-none">12.5k+</p>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Success Stories</p>
@@ -138,7 +158,6 @@ const Hero = () => {
                </div>
             </div>
 
-            {/* Floating Quick Support Button */}
             <div className="absolute -bottom-6 -left-6 md:-left-12">
               <div className="relative z-30">
                 <AnimatePresence>

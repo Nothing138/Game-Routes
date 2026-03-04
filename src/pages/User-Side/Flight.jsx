@@ -285,7 +285,6 @@ const Flight = () => {
                     </div>
                 </div>
             </main>
-            <Footer />
         </div>
     );
 };

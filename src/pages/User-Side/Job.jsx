@@ -203,7 +203,7 @@ const Job = () => {
           )}
         </div>
       </div>
-      <Footer />
+
     </>
   );
 };

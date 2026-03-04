@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Outlet, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -43,9 +43,17 @@ import ApplyTours from './pages/User-Side/ApplyTours';
 import UserProfile from './pages/User-Side/UserProfile';
 import Flight from './pages/User-Side/Flight';
 
-// 🌐 MAIN LAYOUT WITH DARK MODE SUPPORT
+// ✅ ১. Scroll To Top Logic (পেজ চেঞ্জ হলে উপরে নিয়ে যাবে)
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
+// 🌐 MAIN LAYOUT
 const MainLayout = () => (
-  /* Eikhane amra global background ar text color set korechi */
   <div className="flex flex-col min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-500">
     <Navbar />
     <main className="flex-grow">
@@ -58,15 +66,33 @@ const MainLayout = () => (
 function App() {
   return (
     <Router>
+      {/* ২. ScrollToTop এখানে কল করতে হবে */}
+      <ScrollToTop />
+      
       <Routes>
-        {/* 🌐 PUBLIC PAGES */}
+        {/* 🌐 PUBLIC PAGES (সবাই দেখতে পারবে) */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/blogs/:slug" element={<BlogDetail />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="visa" element={<Visa />} />
+          <Route path="job" element={<Job />} />
+          <Route path="travel" element={<Travel />} />
+          <Route path="flight" element={<Flight />} />
+          <Route path="aboutus" element={<AboutUs />} />
+
+          {/* 🔐 USER PROTECTED ROUTES (শুধুমাত্র লগইন করা ইউজাররা দেখবে) */}
+          <Route element={<ProtectedRoute allowedRoles={['user', 'admin', 'superadmin']} />}>
+             <Route path="/apply-visa/:visaId" element={<ApplyVisa />} />
+             <Route path="/apply-job/:jobId" element={<ApplyJob />} />
+             <Route path="/apply-tours/:pkgId" element={<ApplyTours />} />
+             <Route path="profile" element={<UserProfile />} />
+          </Route>
         </Route>
 
-        {/* 📊 UNIFIED DASHBOARD (Protected) */}
+        {/* 📊 ADMIN DASHBOARD (Protected) */}
         <Route path="/admin" element={
           <ProtectedRoute allowedRoles={['superadmin', 'admin', 'hr_manager', 'moderator', 'recruiter']}>
             <AdminLayout />
@@ -92,19 +118,6 @@ function App() {
           <Route path="notifications" element={<InboX />} />
           <Route path="testimonials" element={<UploadTestimony />} />
         </Route>
-
-        
-          <Route path="/blogs/:slug" element={<BlogDetail />} />
-          <Route path="forgot-password" element={<ForgotPassword />} />
-          <Route path="visa" element={<Visa />} />
-          <Route path="job" element={<Job />} />
-          <Route path="travel" element={<Travel />} />
-          <Route path="aboutus" element={<AboutUs />} />
-          <Route path="/apply-visa/:visaId" element={<ApplyVisa />} />
-          <Route path="/apply-job/:jobId" element={<ApplyJob />} />
-          <Route path="/apply-tours/:pkgId" element={<ApplyTours />} />
-          <Route path="profile" element={<UserProfile />} />
-           <Route path="flight" element={<Flight />} />
 
         {/* 🚀 404 PAGE */}
         <Route path="*" element={<NotFound />} />

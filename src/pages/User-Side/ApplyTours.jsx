@@ -167,7 +167,6 @@ const ApplyTours = () => {
           </form>
         </motion.div>
       </div>
-      <Footer />
     </>
   );
 };

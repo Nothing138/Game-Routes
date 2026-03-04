@@ -290,7 +290,6 @@ const Visa = () => {
         </div>
       </section>
 
-      <Footer />
 
       {/* Tailwind Custom Animation Style */}
       <style jsx>{`

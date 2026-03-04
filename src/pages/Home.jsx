@@ -14,6 +14,7 @@ import Testimony from '../pages/User-Side/Testimonials';
 import Blog from '../pages/User-Side/Blog';
 
 
+
 const Home = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-slate-900 dark:text-white transition-colors duration-500"> 
@@ -29,7 +30,6 @@ const Home = () => {
       <Blog />
       <About />
       <Testimony />
-
     </div>
   )
 }

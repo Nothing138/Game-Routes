@@ -20,27 +20,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
         
         {/* 📧 1. Newsletter Section (No Overlap Version) */}
-        <div className="py-12 md:py-16 border-b border-slate-800/50">
-          <div className="bg-gradient-to-br from-slate-900 to-black border border-slate-800 p-8 md:p-12 rounded-[2.5rem] shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-10">
-            <div className="max-w-md text-center lg:text-left">
-              <h3 className="text-3xl font-black text-white mb-3 tracking-tight">Stay Connected</h3>
-              <p className="text-slate-400 text-sm font-medium leading-relaxed">
-                Receive the latest job alerts and visa policy updates directly to your inbox.
-              </p>
-            </div>
-            <form className="w-full lg:w-auto flex flex-col sm:flex-row gap-3 bg-slate-800/30 p-2 rounded-2xl border border-slate-700/50 backdrop-blur-md">
-              <input 
-                type="email" 
-                placeholder="professional-email@company.com" 
-                className="bg-transparent border-none outline-none px-5 py-3 text-white placeholder:text-slate-500 w-full lg:w-72 text-sm focus:ring-0"
-                required
-              />
-              <button className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 group">
-                Join Now <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-            </form>
-          </div>
-        </div>
+        
 
         {/* 🏢 2. Main Footer Grid */}
         <div className="py-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-16 lg:gap-8">
@@ -132,23 +112,23 @@ const Footer = () => {
           </div>
         </div>
 
+
         {/* 🔒 4. Bottom Footer Bar */}
-        <div className="py-10 border-t border-slate-900/50 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="py-5 border-t border-slate-900/50 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex flex-wrap justify-center items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-slate-500">
              <div className="flex items-center gap-2">
                <ShieldCheck size={14} className="text-emerald-500" /> Secure SSL Encrypted
              </div>
              <span>© {currentYear} GAME ROUTES</span>
           </div>
-          
-          <div className="flex items-center gap-4">
+        </div>
+        <div className="flex items-center gap-4 py-5">
              <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Product of</span>
              <div className="px-4 py-1.5 bg-blue-600/10 border border-blue-500/20 rounded-full flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">JM-IT Enterprise</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">JM-IT</span>
              </div>
           </div>
-        </div>
       </div>
     </footer>
   );

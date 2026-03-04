@@ -181,7 +181,7 @@ const Travel = () => {
           </div>
         </section>
 
-        <Footer />
+
       </div>
     </>
   );
