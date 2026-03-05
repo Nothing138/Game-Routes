@@ -188,10 +188,11 @@ router.get('/visa-countries/top', async (req, res) => {
 router.get('/visa-applications', async (req, res) => {
     try {
         const query = `
-            SELECT va.*, u.full_name, vc.category_name as visa_type_name 
+            SELECT va.*, u.full_name, vc.category_name as visa_type_name, vct.application_charge 
             FROM visa_applications va
             JOIN users u ON va.user_id = u.id
             LEFT JOIN visa_categories vc ON va.category_id = vc.id
+            LEFT JOIN visa_countries vct ON va.country_id = vct.id
             ORDER BY va.id DESC
         `;
         const [rows] = await db.query(query);

@@ -26,6 +26,7 @@ const Applications = () => {
                     <select id="swal-status" class="w-full p-3 mb-4 bg-gray-50 border-none rounded-2xl font-bold">
                         <option value="submitted" ${app.application_status === 'submitted' ? 'selected' : ''}>Submitted</option>
                         <option value="reviewing" ${app.application_status === 'reviewing' ? 'selected' : ''}>Reviewing</option>
+                        <option value="embassy_update" ${app.application_status === 'embassy_update' ? 'selected' : ''}>Embassy Update</option>
                         <option value="approved" ${app.application_status === 'approved' ? 'selected' : ''}>Approved</option>
                         <option value="rejected" ${app.application_status === 'rejected' ? 'selected' : ''}>Rejected</option>
                     </select>
@@ -155,7 +156,7 @@ const Applications = () => {
                                             {showAmount[app.id] ? <ShieldCheck size={14}/> : <ShieldAlert size={14}/>}
                                         </button>
                                         <span className={`font-black italic text-sm ${showAmount[app.id] ? 'blur-0' : 'blur-[4px] shadow-sm'} transition-all duration-300`}>
-                                            ${app.application_charge || '0.00'}
+                                            ${app.application_charge ? Number(app.application_charge).toLocaleString() : '0.00'}
                                         </span>
                                     </div>
                                 </td>
