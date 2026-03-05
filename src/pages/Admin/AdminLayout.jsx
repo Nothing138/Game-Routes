@@ -3,10 +3,10 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { 
-  LayoutDashboard, Globe, Briefcase, MapPin, 
+  LayoutDashboard, Globe, Briefcase, MapPin, Plane, 
   FileText, Users, UserPlus, Menu, X, Bell, LogOut, ChevronDown, 
   PlusCircle, List, Send, CheckCircle, Package, Bookmark,
-  BarChart3, MessageSquare, Mail, Sun, Moon, Quote 
+  BarChart3, MessageSquare, Mail, Sun, Moon, Quote, ExternalLink
 } from 'lucide-react';
 
 import Footer from '../../components/Admin&Recruiter/Footer';
@@ -97,6 +97,17 @@ const AdminLayout = () => {
             />
           )}
 
+          {/* --- New Flight Section --- */}
+          {isHR && (
+            <SidebarDropdown 
+              label="Flight" icon={<Plane size={20}/>} isOpen={isSidebarOpen} isMenuOpen={openMenus.flight} onClick={() => toggleMenu('flight')}
+              items={[
+                { label: 'Flight Requests', to: '/admin/flight-requests', icon: <Send size={14}/> },
+                { label: 'Flight List & Revenue', to: '/admin/flight-revenue', icon: <BarChart3 size={14}/> },
+              ]}
+            />
+          )}
+
           {isRecruiter && (
             <SidebarDropdown 
               label="Job Circular" icon={<Briefcase size={20}/>} isOpen={isSidebarOpen} isMenuOpen={openMenus.job} onClick={() => toggleMenu('job')}
@@ -118,13 +129,12 @@ const AdminLayout = () => {
             />
           )}
 
-          {/* --- Communications Section (Updated) --- */}
           {isRecruiter && (
             <SidebarDropdown 
               label="Communications" icon={<MessageSquare size={20}/>} isOpen={isSidebarOpen} isMenuOpen={openMenus.chat} onClick={() => toggleMenu('chat')}
               items={[
                 { label: 'Inbox', to: '/admin/notifications', icon: <Mail size={14}/> },
-                { label: 'Upload Testimony', to: '/admin/testimonials', icon: <Quote size={14}/> }, // Notun Item Add kora hoyeche
+                { label: 'Upload Testimony', to: '/admin/testimonials', icon: <Quote size={14}/> },
                 { label: 'ANNOUNCEMENT', to: '/admin/push-alerts', icon: <Bell size={14}/> },
               ]}
             />
@@ -160,6 +170,16 @@ const AdminLayout = () => {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* --- New Website Home Button --- */}
+            <a 
+              href="/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className={`flex items-center gap-2 font-black text-[10px] uppercase italic px-4 py-2.5 rounded-xl transition-all border ${isDarkMode ? 'bg-slate-800 text-red-400 border-slate-700 hover:bg-red-600 hover:text-white' : 'bg-white text-red-600 border-red-100 hover:bg-red-600 hover:text-white'}`}
+            >
+              <ExternalLink size={14}/> Visit Site
+            </a>
+
             <button onClick={toggleDarkMode} className={`p-3 rounded-2xl transition-all duration-300 border ${isDarkMode ? 'bg-slate-800 text-yellow-400 border-slate-700 hover:bg-slate-700' : 'bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100'}`}>
               {isDarkMode ? <Sun size={20}/> : <Moon size={20}/>}
             </button>

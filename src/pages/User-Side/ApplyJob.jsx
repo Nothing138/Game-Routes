@@ -82,7 +82,7 @@ const Apply = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-slate-50 dark:bg-[#020617] pt-32 pb-20 px-6">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#020617] pt-40 pb-20 px-6">
         <div className="max-w-4xl mx-auto">
           {/* Back Button */}
           <button 

@@ -6,7 +6,7 @@ import {
   Sun, Moon, Globe, Phone, Clock, Menu, X, 
   Home, Briefcase, Plane, PlaneTakeoff, 
   LogIn, UserPlus, ArrowRight, Facebook, Instagram, Twitter, ChevronDown,
-  User, LogOut
+  User, LogOut, LayoutDashboard
 } from 'lucide-react';
 import logoImg from '../assets/logo_game_routes.png';
 
@@ -117,12 +117,15 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // লজিক: ইউজার টাইপ চেক করা
+  const isSpecialUser = user && user.role && user.role !== 'candidate' && user.role !== 'user';
+
   const navItems = [
     { name: 'Home', path: '/', icon: <Home size={18} /> },
     { name: 'Visa', path: '/visa', icon: <PlaneTakeoff size={18} /> },
     { name: 'Job', path: '/job', icon: <Briefcase size={18} /> },
     { name: 'Travel', path: '/travel', icon: <Globe size={18} /> },
-    { name: 'Flight', path: '/flight', icon: <Plane size={18} /> }, // New Flight Item
+    { name: 'Flight', path: '/flight', icon: <Plane size={18} /> },
     { name: 'About Us', path: '/aboutus', icon: <Phone size={18} /> },
   ];
 
@@ -230,11 +233,26 @@ const Navbar = () => {
                         <div className="p-4 border-b border-slate-100 dark:border-slate-800 mb-2">
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Account Details</p>
                           <p className="text-xs font-black text-slate-900 dark:text-white truncate">{user.email}</p>
+                          <p className="text-[8px] font-black text-blue-600 uppercase mt-1">Role: {user.role || 'User'}</p>
                         </div>
-                        <button onClick={() => {navigate('/profile'); setShowUserDropdown(false)}} className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group">
-                          <User size={16} className="text-slate-400 group-hover:text-blue-600" />
-                          <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-white">Profile</span>
-                        </button>
+
+                        {/* কন্ডিশনাল বাটন: স্পেশাল ইউজার হলে ড্যাশবোর্ড, নাহলে প্রোফাইল */}
+                        {isSpecialUser ? (
+                          <button onClick={() => {navigate('/admin/dashboard'); setShowUserDropdown(false)}} className="w-full flex items-center gap-3 p-3 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all group">
+                            <LayoutDashboard size={16} className="text-blue-600" />
+                            <span className="text-xs font-black uppercase tracking-wider text-blue-600">Dashboard</span>
+                          </button>
+                        ) : (
+                          <Link 
+                            to="/profile" 
+                            onClick={() => setShowUserDropdown(false)}
+                            className="w-full flex items-center gap-3 p-3 ..."
+                          >
+                            <User size={16} />
+                            <span className="text-xs font-bold uppercase">Profile</span>
+                          </Link>
+                        )}
+
                         <button onClick={handleLogout} className="w-full flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl transition-all group mt-2">
                           <LogOut size={16} className="text-red-500" />
                           <span className="text-xs font-black uppercase tracking-wider text-red-600">Logout</span>
@@ -290,9 +308,13 @@ const Navbar = () => {
                       <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xl font-bold">{user.name?.charAt(0).toUpperCase()}</div>
                       <div>
                         <p className="font-black uppercase italic">{user.name}</p>
-                        <p className="text-[10px] text-slate-500 uppercase font-bold">{user.email}</p>
+                        <p className="text-[10px] text-slate-500 uppercase font-bold">{user.role || 'User'}</p>
                       </div>
                     </div>
+                    {/* মোবাইল মেনুতেও ড্যাশবোর্ড লজিক */}
+                    {isSpecialUser && (
+                      <button onClick={() => {navigate('/admin/dashboard'); setIsOpen(false)}} className="w-full py-4 border-2 border-blue-600 text-blue-600 font-black uppercase tracking-widest rounded-2xl">Dashboard</button>
+                    )}
                     <button onClick={handleLogout} className="w-full py-5 bg-red-600 text-white font-black uppercase tracking-widest rounded-2xl text-xl shadow-lg">Logout</button>
                   </div>
                 ) : (

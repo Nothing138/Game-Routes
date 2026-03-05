@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { User, Briefcase, Plane, Map, Send, Edit3, ShieldCheck, Smile, Lock, Eye, EyeOff, X } from 'lucide-react';
+import { User, Briefcase, Plane, Map, Send, ShieldCheck, Lock, Eye, Ticket, Phone, UserCircle, PlusCircle } from 'lucide-react';
 import Navbar from '../../components/Navbar';
-import Footer from '../../components/Footer';
 import io from 'socket.io-client';
-import EmojiPicker from 'emoji-picker-react';
 import { toast, Toaster } from 'react-hot-toast';
 
 const socket = io.connect("http://localhost:5000");
@@ -12,12 +10,14 @@ const socket = io.connect("http://localhost:5000");
 const UserProfile = () => {
     const [data, setData] = useState(null);
     const [activeTab, setActiveTab] = useState('overview');
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [newContact, setNewContact] = useState("");
+    const [isSubmittingContact, setIsSubmittingContact] = useState(false);
+    
     const user = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
-        fetchProfile();
         if (user) {
+            fetchProfile();
             socket.emit("join_chat", user.id);
         }
     }, []);
@@ -27,7 +27,28 @@ const UserProfile = () => {
             const res = await axios.get(`http://localhost:5000/api/users/profile/${user.id}`);
             setData(res.data);
         } catch (err) {
-            console.error("Error fetching profile", err);
+            console.error("Error fetching data", err);
+        }
+    };
+
+    const handleUpdateContact = async (e) => {
+        e.preventDefault();
+        if (!newContact) return toast.error("Please enter a number");
+        
+        setIsSubmittingContact(true);
+        try {
+            await axios.put(`http://localhost:5000/api/users/profile/update`, {
+                userId: user.id,
+                contact_number: newContact,
+                full_name: data?.profile?.full_name 
+            });
+            toast.success("Contact number updated!");
+            setNewContact("");
+            fetchProfile(); 
+        } catch (err) {
+            toast.error("Failed to update contact");
+        } finally {
+            setIsSubmittingContact(false);
         }
     };
 
@@ -48,7 +69,6 @@ const UserProfile = () => {
                                 </div>
                                 <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 border-4 border-[#020617] rounded-full"></div>
                             </div>
-                            {/* User Name and Role Display */}
                             <h2 className="text-xl font-black uppercase italic tracking-tighter text-blue-400">
                                 {data?.profile?.full_name || "Loading..."}
                             </h2>
@@ -70,7 +90,10 @@ const UserProfile = () => {
                         {activeTab === 'overview' && (
                             <Overview 
                                 data={data} 
-                                onEditClick={() => setIsEditModalOpen(true)} 
+                                onContactSubmit={handleUpdateContact}
+                                contactVal={newContact}
+                                setContactVal={setNewContact}
+                                isSubmitting={isSubmittingContact}
                             />
                         )}
                         {activeTab === 'applications' && <Applications data={data} />}
@@ -79,165 +102,182 @@ const UserProfile = () => {
                     </div>
                 </div>
             </main>
-
-            {/* --- Edit Profile Modal --- */}
-            {isEditModalOpen && (
-                <EditProfileModal 
-                    user={user} 
-                    currentData={data?.profile} 
-                    onClose={() => setIsEditModalOpen(false)} 
-                    onSuccess={fetchProfile}
-                />
-            )}
-
-
         </div>
     );
 };
 
-// --- Edit Profile Modal Component ---
-
-const EditProfileModal = ({ user, currentData, onClose, onSuccess }) => {
-    const [formData, setFormData] = useState({
-        full_name: currentData?.full_name || '',
-        passport_number: currentData?.passport_number || '',
-        profession: currentData?.profession || '',
-        current_location: currentData?.current_location || ''
-    });
-    const [loading, setLoading] = useState(false);
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            await axios.put(`http://localhost:5000/api/users/profile/update`, {
-                userId: user.id,
-                ...formData
-            });
-
-            if (response.data.success) {
-                toast.success("Profile updated successfully!");
-                onSuccess(); // Eita fetchProfile ke call korbe
-                onClose();
-            }
-            
-        } catch (err) {
-            toast.error("Failed to update profile");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-[3rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-                <div className="p-8 border-b border-slate-800 flex justify-between items-center">
-                    <h3 className="text-xl font-black uppercase italic flex items-center gap-3">
-                        <Edit3 className="text-blue-500" size={24} /> Edit Identity
-                    </h3>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full transition-colors">
-                        <X size={20} />
-                    </button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="p-8 space-y-5">
-                    <div>
-                        <label className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2 block">Full Name</label>
-                        <input 
-                            type="text"
-                            value={formData.full_name}
-                            onChange={(e) => setFormData({...formData, full_name: e.target.value})}
-                            className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl px-5 py-3 text-sm focus:border-blue-500 outline-none"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Email (Non-Editable)</label>
-                        <input 
-                            type="text"
-                            value={currentData?.email}
-                            disabled
-                            className="w-full bg-slate-950/30 border border-slate-800 rounded-2xl px-5 py-3 text-sm text-slate-600 cursor-not-allowed italic"
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2 block">Passport No</label>
-                            <input 
-                                type="text"
-                                value={formData.passport_number}
-                                onChange={(e) => setFormData({...formData, passport_number: e.target.value})}
-                                className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl px-5 py-3 text-sm focus:border-blue-500 outline-none"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2 block">Location</label>
-                            <input 
-                                type="text"
-                                value={formData.current_location}
-                                onChange={(e) => setFormData({...formData, current_location: e.target.value})}
-                                className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl px-5 py-3 text-sm focus:border-blue-500 outline-none"
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <label className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2 block">Profession</label>
-                        <input 
-                            type="text"
-                            value={formData.profession}
-                            onChange={(e) => setFormData({...formData, profession: e.target.value})}
-                            className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl px-5 py-3 text-sm focus:border-blue-500 outline-none"
-                        />
-                    </div>
-
-                    <div className="pt-4">
-                        <button 
-                            type="submit" 
-                            disabled={loading}
-                            className="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-black uppercase text-xs tracking-[0.2em] transition-all shadow-lg shadow-blue-600/20"
-                        >
-                            {loading ? "Syncing..." : "Save Changes"}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    );
-};
-
-// --- Overview Component with Active Edit Button ---
-
-const Overview = ({ data, onEditClick }) => (
+// --- Command Center Component ---
+const Overview = ({ data, onContactSubmit, contactVal, setContactVal, isSubmitting }) => (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <StatCard icon={<Plane size={20} />} title="Visas" count={data?.stats?.visas?.length || 0} color="blue" />
             <StatCard icon={<Briefcase size={20} />} title="Job Phases" count={data?.stats?.jobs?.length || 0} color="emerald" />
-            <StatCard icon={<Map size={20} />} title="Active Tours" count={data?.stats?.tours?.length || 0} color="amber" />
+            <StatCard icon={<Ticket size={20} />} title="Flight Requests" count={data?.stats?.flights?.length || 0} color="purple" />
         </div>
+        
         <div className="bg-slate-900/40 border border-slate-800 p-10 rounded-[3.5rem] backdrop-blur-md">
-            <div className="flex justify-between items-center mb-10">
+            <div className="mb-10">
                 <h3 className="text-2xl font-black uppercase italic flex items-center gap-4">
-                    <ShieldCheck className="text-blue-500" size={28} /> Personal Documents
+                    <ShieldCheck className="text-blue-500" size={28} /> Personnel Identity
                 </h3>
-                <button 
-                    onClick={onEditClick}
-                    className="flex items-center gap-2 px-6 py-2 bg-slate-800 rounded-full text-xs font-bold hover:bg-blue-600 transition-colors uppercase tracking-widest border border-slate-700"
-                >
-                    <Edit3 size={14} /> Edit Profile
-                </button>
             </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <InfoItem icon={<UserCircle size={16} />} label="Legal Full Name" value={data?.profile?.full_name} />
+                
+                <div>
+                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1 flex items-center gap-2">
+                        <Phone size={14} /> Primary Contact
+                    </p>
+                    {data?.profile?.phone_number ? (
+                        <p className="text-lg font-bold text-slate-200">{data.profile.phone_number}</p>
+                    ) : (
+                        <form onSubmit={onContactSubmit} className="mt-2 flex gap-2">
+                            <input 
+                                type="text" 
+                                placeholder="Add Contact Number" 
+                                value={contactVal}
+                                onChange={(e) => setContactVal(e.target.value)}
+                                className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs outline-none focus:border-blue-500 w-full"
+                            />
+                            <button 
+                                type="submit" 
+                                disabled={isSubmitting}
+                                className="bg-blue-600 p-2 rounded-xl hover:bg-blue-500 transition-colors"
+                            >
+                                <PlusCircle size={18} />
+                            </button>
+                        </form>
+                    )}
+                </div>
+
                 <InfoItem label="Email Identity" value={data?.profile?.email} />
                 <InfoItem label="Passport Number" value={data?.profile?.passport_number || 'N/A'} />
-                <InfoItem label="Current Profession" value={data?.profile?.profession || 'Professional'} />
-                <InfoItem label="Current Location" value={data?.profile?.current_location || 'Not Specified'} />
             </div>
         </div>
     </div>
 );
 
-// --- Sub-components (Applications, SecuritySettings, StatCard, etc. same as before) ---
-// (Briefly including to ensure logic is kept)
+// --- My Journey Component ---
+const Applications = ({ data }) => {
+    const [subTab, setSubTab] = useState('visa');
+
+    const renderContent = () => {
+        switch (subTab) {
+            case 'visa':
+                return (
+                    <div className="space-y-4">
+                        {data?.stats?.visas?.length > 0 ? data.stats.visas.map(v => (
+                            <JourneyCard key={v.id} icon={<Plane className="text-blue-500" />} title={v.destination_country} sub={v.visa_type} status={v.application_status} />
+                        )) : <EmptyState message="No Visa Records Found" />}
+                    </div>
+                );
+            case 'job':
+                return (
+                    <div className="space-y-4">
+                        {data?.stats?.jobs?.length > 0 ? data.stats.jobs.map(j => (
+                            <JourneyCard key={j.id} icon={<Briefcase className="text-emerald-500" />} title={j.job_title} sub={j.company_name} status={j.status} />
+                        )) : <EmptyState message="No Job Applications Found" />}
+                    </div>
+                );
+            case 'tour':
+                return (
+                    <div className="space-y-4">
+                        {data?.stats?.tours?.length > 0 ? data.stats.tours.map(t => (
+                            <JourneyCard key={t.id} icon={<Map className="text-amber-500" />} title={t.tour_name} sub={t.destination} status={t.status} />
+                        )) : <EmptyState message="No Tour Bookings Found" />}
+                    </div>
+                );
+            case 'flight':
+                return (
+                    <div className="space-y-4">
+                        {data?.stats?.flights?.length > 0 ? data.stats.flights.map(f => (
+                            <JourneyCard 
+                                key={f.id} 
+                                icon={<Ticket className="text-purple-500" />} 
+                                title={`${f.departure_city} to ${f.destination_city}`} 
+                                sub={`Travel Date: ${new Date(f.travel_date).toLocaleDateString()} | Bill: $${f.total_cost || '0.00'}`} 
+                                status={f.status} 
+                            />
+                        )) : <EmptyState message="No Flight Requests Found" />}
+                    </div>
+                );
+            default: return null;
+        }
+    };
+
+    return (
+        <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="flex flex-wrap gap-3 bg-slate-900/40 p-2 rounded-[2rem] border border-slate-800">
+                {['visa', 'job', 'tour', 'flight'].map((tab) => (
+                    <button
+                        key={tab}
+                        onClick={() => setSubTab(tab)}
+                        className={`flex-1 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${subTab === tab ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:bg-slate-800'}`}
+                    >
+                        {tab} Status
+                    </button>
+                ))}
+            </div>
+            <div className="bg-slate-900/40 border border-slate-800 rounded-[2.5rem] overflow-hidden min-h-[300px]">
+                <div className="p-2">{renderContent()}</div>
+            </div>
+        </div>
+    );
+};
+
+// --- Reusable UI Helpers ---
+const JourneyCard = ({ icon, title, sub, status }) => (
+    <div className="p-6 flex items-center justify-between border-b border-slate-800/50 last:border-0 hover:bg-slate-800/20 transition-colors">
+        <div className="flex items-center gap-4">
+            <div className="p-3 bg-slate-800 rounded-2xl">{icon}</div>
+            <div>
+                <p className="font-black text-sm uppercase italic tracking-tight">{title}</p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase">{sub}</p>
+            </div>
+        </div>
+        <StatusBadge status={status} />
+    </div>
+);
+
+const TabBtn = ({ active, onClick, label }) => (
+    <button onClick={onClick} className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:bg-slate-800/50'}`}>
+        {label}
+    </button>
+);
+
+const StatCard = ({ icon, title, count, color }) => (
+    <div className="p-8 bg-slate-900/50 border border-slate-800 rounded-[2.5rem] flex items-center gap-6">
+        <div className={`w-14 h-14 bg-${color}-500/10 rounded-2xl flex items-center justify-center text-${color}-500`}>{icon}</div>
+        <div>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{title}</p>
+            <p className="text-3xl font-black italic">{count}</p>
+        </div>
+    </div>
+);
+
+const InfoItem = ({ label, value, icon }) => (
+    <div>
+        <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1 flex items-center gap-2">
+            {icon} {label}
+        </p>
+        <p className="text-lg font-bold text-slate-200">{value || 'Not Specified'}</p>
+    </div>
+);
+
+const StatusBadge = ({ status }) => {
+    const s = status?.toLowerCase();
+    const colors = { 
+        approved: 'text-green-400 border-green-400/20 bg-green-400/5', 
+        accept: 'text-green-400 border-green-400/20 bg-green-400/5', 
+        hold: 'text-blue-400 border-blue-400/20 bg-blue-400/5',
+        requested: 'text-amber-400 border-amber-400/20 bg-amber-400/5',
+        reject: 'text-red-400 border-red-400/20 bg-red-400/5'
+    };
+    return <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase border ${colors[s] || 'text-slate-400 border-slate-800'}`}>{status || 'Requested'}</span>;
+};
+
+const EmptyState = ({ message }) => <div className="p-20 text-center text-slate-600 font-bold uppercase text-[10px] tracking-widest">{message}</div>;
 
 const SecuritySettings = ({ user }) => {
     const [passwords, setPasswords] = useState({ old: "", new: "", confirm: "" });
@@ -287,7 +327,6 @@ const PasswordField = ({ label, value, onChange, show }) => (
 const SupportChat = ({ user }) => {
     const [msg, setMsg] = useState("");
     const [history, setHistory] = useState([]);
-    const [showEmoji, setShowEmoji] = useState(false);
     const scrollRef = useRef();
 
     useEffect(() => {
@@ -341,57 +380,5 @@ const SupportChat = ({ user }) => {
         </div>
     );
 };
-
-const Applications = ({ data }) => (
-    <div className="space-y-8 animate-in fade-in duration-500">
-        <section>
-            <h4 className="text-blue-500 font-black uppercase text-xs tracking-[0.3em] mb-4 ml-2">Visa Status</h4>
-            <div className="bg-slate-900/40 border border-slate-800 rounded-[2.5rem] overflow-hidden">
-                {data?.stats?.visas.map(v => (
-                    <div key={v.id} className="p-6 flex items-center justify-between border-b border-slate-800 last:border-0">
-                        <div className="flex items-center gap-4">
-                            <Plane className="text-blue-500" />
-                            <div>
-                                <p className="font-black text-sm uppercase">{v.destination_country}</p>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase">{v.visa_type}</p>
-                            </div>
-                        </div>
-                        <StatusBadge status={v.application_status} />
-                    </div>
-                ))}
-            </div>
-        </section>
-    </div>
-);
-
-const TabBtn = ({ active, onClick, label }) => (
-    <button onClick={onClick} className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${active ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-800/50'}`}>
-        {label}
-    </button>
-);
-
-const StatCard = ({ icon, title, count, color }) => (
-    <div className="p-8 bg-slate-900/50 border border-slate-800 rounded-[2.5rem] flex items-center gap-6">
-        <div className={`w-14 h-14 bg-${color}-500/10 rounded-2xl flex items-center justify-center text-${color}-500`}>{icon}</div>
-        <div>
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{title}</p>
-            <p className="text-3xl font-black italic">{count}</p>
-        </div>
-    </div>
-);
-
-const InfoItem = ({ label, value }) => (
-    <div>
-        <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">{label}</p>
-        <p className="text-lg font-bold text-slate-200">{value}</p>
-    </div>
-);
-
-const StatusBadge = ({ status }) => {
-    const colors = { approved: 'text-green-500 border-green-500/20', pending: 'text-amber-500 border-amber-500/20' };
-    return <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase border ${colors[status] || 'text-slate-400'}`}>{status}</span>;
-};
-
-const EmptyState = ({ message }) => <div className="p-10 text-center text-slate-600 font-bold uppercase text-[10px]">{message}</div>;
 
 export default UserProfile;

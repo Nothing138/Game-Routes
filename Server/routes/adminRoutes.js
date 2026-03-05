@@ -14,7 +14,7 @@ router.put('/approve-recruiter/:id', approveRecruiter);
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const dir = 'public/uploads/country/';
-        // Folder na thakle create korbe
+        
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }
@@ -318,15 +318,25 @@ router.post('/jobs', async (req, res) => {
 router.get('/applied-candidates', async (req, res) => {
     try {
         const query = `
-            SELECT ja.*, j.title as job_title, u.full_name, u.email, u.resume_url 
+            SELECT 
+                ja.id, 
+                ja.status, 
+                ja.application_date AS created_at, 
+                ja.full_name, 
+                ja.cv_url AS resume_url, 
+                COALESCE(j.job_title, 'Job Deleted') AS job_title, 
+                u.email 
             FROM job_applications ja
-            JOIN jobs j ON ja.job_id = j.id
-            JOIN users u ON ja.user_id = u.id
+            LEFT JOIN jobs j ON ja.job_id = j.id
+            LEFT JOIN users u ON ja.candidate_id = u.id
             ORDER BY ja.id DESC
         `;
         const [rows] = await db.query(query);
         res.json(rows);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) { 
+        console.error("Backend Error:", err.message);
+        res.status(500).json({ error: "Database query failed" }); 
+    }
 });
 
 // GET RECRUITER LIST & HIRE COUNT ---

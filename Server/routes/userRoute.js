@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 
-// --- 1. Get Complete User Profile & Stats ---
+// --- 1. Get Complete User Profile & Stats (FIXED) ---
 router.get('/profile/:id', async (req, res) => {
     try {
         const userId = req.params.id;
@@ -32,12 +32,19 @@ router.get('/profile/:id', async (req, res) => {
             JOIN tour_packages tp ON tb.package_id = tp.id 
             WHERE tb.user_id = ?`, [userId]);
 
+        // --- যোগ করা হয়েছে: Flight Bookings ---
+        const [flights] = await db.query(`
+            SELECT * FROM travel_bookings 
+            WHERE user_id = ? AND booking_type = 'flight'
+            ORDER BY id DESC`, [userId]);
+
         res.json({
             profile: user[0],
             stats: {
                 visas: visas,
                 jobs: jobs,
-                tours: tours
+                tours: tours,
+                flights: flights // এই ডাটাটি এখন ফ্রন্টএন্ডে যাবে
             }
         });
     } catch (err) {
@@ -47,13 +54,19 @@ router.get('/profile/:id', async (req, res) => {
 
 // --- 2. Update Profile ---
 router.put('/profile/update', async (req, res) => {
-    const { user_id, first_name, surname, phone_number, profession, current_location } = req.body;
+    const { userId, full_name, contact_number, passport_number, current_location } = req.body;
+    
     try {
-        await db.query(`
-            UPDATE user_details 
-            SET first_name=?, surname=?, phone_number=?, profession=?, current_location=? 
-            WHERE user_id=?`, 
-            [first_name, surname, phone_number, profession, current_location, user_id]);
+        if (full_name) {
+            await db.query(`UPDATE users SET full_name = ? WHERE id = ?`, [full_name, userId]);
+        }
+
+        await db.query(
+            `UPDATE user_details 
+             SET phone_number = ?, passport_number = ?, current_location = ? 
+             WHERE user_id = ?`, 
+            [contact_number, passport_number, current_location, userId]
+        );
         
         res.json({ success: true, message: "Profile updated successfully!" });
     } catch (err) {

@@ -29,6 +29,8 @@ import AnnouncementMAnager from './pages/Admin/Announcement';
 import ManageRecruiters from './pages/Admin/ManageRecruiters';
 import JobList from './pages/Admin/JobList';
 import UploadTestimony from './pages/Admin/UploadTestimony';
+import FlightRequests from './pages/Admin/FlightRequests';
+import FlightRevenue from './pages/Admin/FlightRevenue';
 
 //User-Side
 import BlogDetail from './pages/User-Side/BlogDetail';
@@ -82,14 +84,16 @@ function App() {
           <Route path="travel" element={<Travel />} />
           <Route path="flight" element={<Flight />} />
           <Route path="aboutus" element={<AboutUs />} />
+          <Route path="profile" element={<UserProfile />} />
+          <Route path="/apply-visa/:visaId" element={<ApplyVisa />} />
+          <Route path="/apply-job/:jobId" element={<ApplyJob />} />
+          <Route path="/apply-tours/:pkgId" element={<ApplyTours />} />
 
-          {/* 🔐 USER PROTECTED ROUTES (শুধুমাত্র লগইন করা ইউজাররা দেখবে) */}
+          {/* 🔐 USER PROTECTED ROUTES (শুধুমাত্র লগইন করা ইউজাররা দেখবে) 
           <Route element={<ProtectedRoute allowedRoles={['user', 'admin', 'superadmin']} />}>
-             <Route path="/apply-visa/:visaId" element={<ApplyVisa />} />
-             <Route path="/apply-job/:jobId" element={<ApplyJob />} />
-             <Route path="/apply-tours/:pkgId" element={<ApplyTours />} />
-             <Route path="profile" element={<UserProfile />} />
-          </Route>
+             
+             
+          </Route>*/}
         </Route>
 
         {/* 📊 ADMIN DASHBOARD (Protected) */}
@@ -117,6 +121,8 @@ function App() {
           <Route path="job-list" element={<JobList />} />
           <Route path="notifications" element={<InboX />} />
           <Route path="testimonials" element={<UploadTestimony />} />
+          <Route path="flight-requests" element={<FlightRequests />} />
+          <Route path="flight-revenue" element={<FlightRevenue />} />
         </Route>
 
         {/* 🚀 404 PAGE */}
