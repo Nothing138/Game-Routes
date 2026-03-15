@@ -21,10 +21,10 @@ const Hero = () => {
   }, []);
 
   const services = [
-    { label: 'Study', icon: <GraduationCap size={28} />, bg: 'bg-yellow-400', text: 'text-black' },
-    { label: 'Work', icon: <Briefcase size={28} />, bg: 'bg-slate-900', text: 'text-white' },
-    { label: 'Invest', icon: <Globe2 size={28} />, bg: 'bg-slate-100 dark:bg-slate-800', text: 'dark:text-white' },
-    { label: 'Migrate', icon: <Sparkles size={28} />, bg: 'bg-blue-600', text: 'text-white' }
+    { label: 'Visa', icon: <GraduationCap size={28} />, bg: 'bg-yellow-400', text: 'text-black' },
+    { label: 'Job', icon: <Briefcase size={28} />, bg: 'bg-slate-900', text: 'text-white' },
+    { label: 'Travel', icon: <Globe2 size={28} />, bg: 'bg-slate-100 dark:bg-slate-800', text: 'dark:text-white' },
+    { label: 'Flight', icon: <Sparkles size={28} />, bg: 'bg-blue-600', text: 'text-white' }
   ];
 
   useEffect(() => {

@@ -6,8 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   MapPin, Star, ArrowRight, Globe, ShieldCheck, Camera, Users, Sparkles, Loader2
 } from 'lucide-react';
-import Navbar from '../../components/Navbar';
-import Footer from '../../components/Footer';
+import FloatingButton from './FloatingButton';
 
 const Travel = () => {
   const [packages, setPackages] = useState([]);
@@ -64,7 +63,7 @@ const Travel = () => {
 
   return (
     <>
-      <Navbar />
+    <FloatingButton />
       <div className="min-h-screen bg-white dark:bg-[#020617] font-sans">
         
         {/* 🏔️ HERO SECTION (Same as your UI) */}

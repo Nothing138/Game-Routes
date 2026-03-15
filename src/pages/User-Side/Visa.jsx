@@ -8,8 +8,7 @@ import {
   Globe2, ShieldCheck, GraduationCap, Tractor, Briefcase, 
   Shovel, Loader2, Sparkles, FilterX, MapPin, MousePointer2
 } from 'lucide-react';
-import Navbar from '../../components/Navbar';
-import Footer from '../../components/Footer';
+import FloatingButton from './FloatingButton';
 
 const Visa = () => {
   const navigate = useNavigate();
@@ -80,8 +79,7 @@ const Visa = () => {
 
   return (
     <div className="bg-slate-50 dark:bg-slate-950 min-h-screen font-sans selection:bg-blue-100 selection:text-blue-600">
-      <Navbar />
-      
+      <FloatingButton />
       {/* 🚀 1. HERO & INTRO */}
       <section className="relative pt-32 pb-20 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Swal from 'sweetalert2';
 import { 
   Sun, Moon, Globe, Phone, Clock, Menu, X, 
-  Home, Briefcase, Plane, PlaneTakeoff, 
+  Home, Briefcase, Plane, PlaneTakeoff,ShieldCheck, 
   LogIn, UserPlus, ArrowRight, Facebook, Instagram, Twitter, ChevronDown,
   User, LogOut, LayoutDashboard
 } from 'lucide-react';
@@ -123,11 +123,11 @@ const Navbar = () => {
   const navItems = [
     { name: 'Home', path: '/', icon: <Home size={18} /> },
     { name: 'Visa', path: '/visa', icon: <PlaneTakeoff size={18} /> },
-    { name: 'Job', path: '/job', icon: <Briefcase size={18} /> },
+    { name: 'Citizenship', path: '/citizenship', icon: <ShieldCheck size={18} /> }, // Add it here
     { name: 'Travel', path: '/travel', icon: <Globe size={18} /> },
     { name: 'Flight', path: '/flight', icon: <Plane size={18} /> },
     { name: 'About Us', path: '/aboutus', icon: <Phone size={18} /> },
-  ];
+];
 
   return (
     <header className="fixed w-full z-[100] font-sans">
